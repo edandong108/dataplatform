@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>菜单管理 - 统一数据开发平台</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: #f0f2f5;
+            color: #333;
+            margin: 0;
+        }
+        .app-container {
+            max-width: none;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .content-area {
+            padding: 0;
+            flex-grow: 1;
+        }
+        .table-container {
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+            border: 1px solid #CBD5E0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 12px 16px;
+            text-align: left;
+            border-bottom: 1px solid #E2E8F0;
+            font-size: 0.9375rem;
+        }
+        th {
+            background-color: #F7FAFC;
+            font-weight: 600;
+            color: #2D3748;
+            text-transform: uppercase;
+            font-size: 0.875rem;
+        }
+        td {
+            color: #4A5568;
+        }
+        tr:last-child td {
+            border-bottom: none;
+        }
+        .action-buttons button {
+            color: #007aff;
+            background: none;
+            border: 1px solid transparent;
+            padding: 6px 10px;
+            margin-right: 8px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+        }
+        .action-buttons button i {
+            margin-right: 4px;
+        }
+        .action-buttons button:hover {
+            background-color: #e7f3ff;
+            border-color: #90CDF4;
+            color: #005bb5;
+        }
+        .action-buttons .delete-button {
+            color: #ff3b30;
+        }
+        .action-buttons .delete-button:hover {
+            background-color: #ffebee;
+            border-color: #FEB2B2;
+            color: #C53030;
+        }
+        .add-button {
+            background-color: #007aff;
+            color: white;
+            padding: 10px 18px;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.9375rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            margin-bottom: 20px;
+            display: inline-flex;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .add-button i {
+            margin-right: 8px;
+        }
+        .add-button:hover {
+            background-color: #005bb5;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1050;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.5);
+        }
+        .modal-content {
+            background-color: #ffffff;
+            margin: 8% auto;
+            padding: 24px;
+            border: 1px solid #E2E8F0;
+            width: 90%;
+            max-width: 600px;
+            border-radius: 8px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1), 0 5px 10px rgba(0,0,0,0.04);
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #E2E8F0;
+        }
+        .modal-header h2 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #2A4365;
+        }
+        .close-button {
+            color: #718096;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            background: none;
+            border: none;
+            padding: 0 4px;
+            line-height: 1;
+        }
+        .close-button:hover {
+            color: #2D3748;
+        }
+        .form-group {
+            margin-bottom: 16px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 0.875rem;
+            color: #4A5568;
+            font-weight: 500;
+        }
+        .form-group input[type="text"], .form-group input[type="number"], .form-group select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #CBD5E0;
+            border-radius: 6px;
+            font-size: 0.9375rem;
+            box-sizing: border-box;
+            background-color: #FFFFFF;
+            color: #2D3748;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+        .form-group input[type="text"]:focus, .form-group input[type="number"]:focus, .form-group select:focus {
+            border-color: #3182CE;
+            box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.2);
+            outline: none;
+        }
+        .form-actions {
+            text-align: right;
+            margin-top: 24px;
+        }
+        .form-actions button {
+            padding: 10px 18px;
+            border-radius: 6px;
+            font-size: 0.9375rem;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            margin-left: 10px;
+            transition: background-color 0.2s ease;
+        }
+        .form-actions .save-button {
+            background-color: #007aff;
+            color: white;
+        }
+        .form-actions .save-button:hover {
+            background-color: #005bb5;
+        }
+        .form-actions .cancel-button {
+            background-color: #E2E8F0;
+            color: #4A5568;
+        }
+        .form-actions .cancel-button:hover {
+            background-color: #CBD5E0;
+        }
+        
+        /* 层级菜单样式 */
+        .menu-level-1 {
+            padding-left: 16px;
+            font-weight: 600;
+            color: #2D3748;
+        }
+        .menu-level-2 {
+            padding-left: 48px;
+            position: relative;
+            color: #4A5568;
+        }
+        .menu-level-2:before {
+            content: "└─";
+            position: absolute;
+            left: 24px;
+            color: #A0AEC0;
+        }
+        .level-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        .level-1 {
+            background-color: #E6FFFA;
+            color: #234E52;
+        }
+        .level-2 {
+            background-color: #EBF4FF;
+            color: #2A4365;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <div class="content-area">
+            <button id="addMenuBtn" class="add-button">
+                <i class="fas fa-plus"></i>新增菜单
+            </button>
+            
+            <!-- 新增菜单的模态框 -->
+            <div id="addMenuModal" class="modal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2>新增菜单</h2>
+                        <button id="closeModalBtn" class="close-button">×</button>
+                    </div>
+                    <form id="menuForm">
+                        <div class="form-group">
+                            <label>菜单名称</label>
+                            <input type="text" id="menuName" required>
+                        </div>
+                        <div class="form-group">
+                            <label>父菜单</label>
+                            <select id="menuParent">
+                                <option value="">选择父菜单（可选）</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>网页路径</label>
+                            <input type="text" id="menuPath" required>
+                        </div>
+                        <div class="form-group">
+                            <label>是否隐藏</label>
+                            <select id="menuHidden">
+                                <option value="false">否</option>
+                                <option value="true">是</option>
+                            </select>
+                        </div>
+                        <div class="form-actions">
+                            <button type="button" id="cancelBtn" class="cancel-button">取消</button>
+                            <button type="submit" class="save-button">保存</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- 编辑菜单的模态框 -->
+            <div id="editMenuModal" class="modal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2>编辑菜单</h2>
+                        <button id="closeEditModalBtn" class="close-button">×</button>
+                    </div>
+                    <form id="editMenuForm">
+                        <input type="hidden" id="editMenuId">
+                        <div class="form-group">
+                            <label>菜单名称</label>
+                            <input type="text" id="editMenuName" required>
+                        </div>
+                        <div class="form-group">
+                            <label>父菜单</label>
+                            <select id="editMenuParent">
+                                <option value="">选择父菜单（可选）</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>网页路径</label>
+                            <input type="text" id="editMenuPath" required>
+                        </div>
+                        <div class="form-group">
+                            <label>是否隐藏</label>
+                            <select id="editMenuHidden">
+                                <option value="false">否</option>
+                                <option value="true">是</option>
+                            </select>
+                        </div>
+                        <div class="form-actions">
+                            <button type="button" id="cancelEditBtn" class="cancel-button">取消</button>
+                            <button type="submit" class="save-button">保存</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>菜单名称</th>
+                            <th>层级</th>
+                            <th>网页路径</th>
+                            <th>是否隐藏</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="menuList">
+                        <!-- 动态生成菜单列表 -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const addMenuBtn = document.getElementById('addMenuBtn');
+            const addMenuModal = document.getElementById('addMenuModal');
+            const closeModalBtn = document.getElementById('closeModalBtn');
+            const cancelBtn = document.getElementById('cancelBtn');
+            const editMenuModal = document.getElementById('editMenuModal');
+            const closeEditModalBtn = document.getElementById('closeEditModalBtn');
+            const cancelEditBtn = document.getElementById('cancelEditBtn');
+            const menuForm = document.getElementById('menuForm');
+            const editMenuForm = document.getElementById('editMenuForm');
+            const menuList = document.getElementById('menuList');
+
+            // 菜单数据管理
+            const MENU_STORAGE_KEY = 'dataPlatformMenus';
+            
+            // 初始化默认菜单数据
+            function initializeMenuData() {
+                const existingMenus = localStorage.getItem(MENU_STORAGE_KEY);
+                if (!existingMenus) {
+                    const defaultMenus = [
+                        // 一级菜单
+                        { id: 1, name: '工作台', path: 'dashboard.html', order: 1, hidden: false, parentId: null },
+                        { id: 2, name: '权限管理', path: '', order: 2, hidden: false, parentId: null },
+                        { id: 3, name: '数据管理', path: '', order: 3, hidden: false, parentId: null },
+                        { id: 4, name: '项目统筹', path: '', order: 4, hidden: false, parentId: null },
+                        { id: 5, name: '系统管理', path: '', order: 5, hidden: false, parentId: null },
+                        { id: 6, name: '监控中心', path: '', order: 6, hidden: false, parentId: null },
+                        
+                        // 权限管理子菜单
+                        { id: 7, name: '用户管理', path: 'user_management.html', order: 1, hidden: false, parentId: 2 },
+                        { id: 8, name: '角色管理', path: 'role_management.html', order: 2, hidden: false, parentId: 2 },
+                        { id: 9, name: '权限配置', path: 'permission_config.html', order: 3, hidden: false, parentId: 2 },
+                        { id: 10, name: '部门管理', path: 'department_management.html', order: 4, hidden: false, parentId: 2 },
+                        
+                        // 数据管理子菜单
+                        { id: 11, name: '数据源管理', path: 'data_source.html', order: 1, hidden: false, parentId: 3 },
+                        { id: 12, name: '数据集管理', path: 'dataset_management.html', order: 2, hidden: false, parentId: 3 },
+                        { id: 13, name: '数据同步', path: 'data_sync.html', order: 3, hidden: false, parentId: 3 },
+                        { id: 14, name: '数据质量', path: 'data_quality.html', order: 4, hidden: false, parentId: 3 },
+                        { id: 15, name: '数据字典', path: 'data_dictionary.html', order: 5, hidden: false, parentId: 3 },
+                        
+                        // 项目管理子菜单
+                        { id: 16, name: '项目列表', path: 'project_management.html', order: 1, hidden: false, parentId: 4 },
+                        { id: 17, name: '项目成员', path: 'project_user_management.html', order: 2, hidden: false, parentId: 4 },
+                        { id: 18, name: '项目配置', path: 'project_config.html', order: 3, hidden: false, parentId: 4 },
+                        { id: 19, name: '项目审批', path: 'project_approval.html', order: 4, hidden: false, parentId: 4 },
+                        
+                        // 系统管理子菜单
+                        { id: 20, name: '菜单管理', path: 'menu_management.html', order: 1, hidden: false, parentId: 5 },
+                        { id: 21, name: '系统配置', path: 'system_config.html', order: 2, hidden: false, parentId: 5 },
+                        { id: 22, name: '操作日志', path: 'operation_log.html', order: 3, hidden: false, parentId: 5 },
+                        { id: 23, name: '系统备份', path: 'system_backup.html', order: 4, hidden: false, parentId: 5 },
+                        { id: 24, name: '定时任务', path: 'scheduled_tasks.html', order: 5, hidden: false, parentId: 5 },
+                        
+                        // 监控中心子菜单
+                        { id: 25, name: '系统监控', path: 'system_monitor.html', order: 1, hidden: false, parentId: 6 },
+                        { id: 26, name: '性能分析', path: 'performance_analysis.html', order: 2, hidden: false, parentId: 6 },
+                        { id: 27, name: '使用统计', path: 'usage_statistics.html', order: 3, hidden: false, parentId: 6 },
+                        { id: 28, name: '报表中心', path: 'report_center.html', order: 4, hidden: false, parentId: 6 },
+                    ];
+                    localStorage.setItem(MENU_STORAGE_KEY, JSON.stringify(defaultMenus));
+                }
+            }
+
+            // 获取菜单数据
+            function getMenus() {
+                const menus = localStorage.getItem(MENU_STORAGE_KEY);
+                return menus ? JSON.parse(menus) : [];
+            }
+
+            // 保存菜单数据
+            function saveMenus(menus) {
+                localStorage.setItem(MENU_STORAGE_KEY, JSON.stringify(menus));
+            }
+
+            // 生成新的菜单ID
+            function generateNewId() {
+                const menus = getMenus();
+                return menus.length > 0 ? Math.max(...menus.map(m => m.id)) + 1 : 1;
+            }
+
+            // 获取父菜单列表
+            function getParentMenus() {
+                const menus = getMenus();
+                return menus.filter(menu => menu.parentId === null);
+            }
+
+            // 获取层级化的菜单列表
+            function getHierarchicalMenus() {
+                const menus = getMenus();
+                const result = [];
+                
+                // 先获取所有一级菜单，按order排序
+                const parentMenus = menus.filter(menu => menu.parentId === null)
+                                         .sort((a, b) => a.order - b.order);
+                
+                parentMenus.forEach(parent => {
+                    // 添加父菜单
+                    result.push({
+                        ...parent,
+                        level: 1,
+                        levelDisplay: '一级菜单'
+                    });
+                    
+                    // 添加该父菜单下的子菜单，按order排序
+                    const children = menus.filter(menu => menu.parentId === parent.id)
+                                          .sort((a, b) => a.order - b.order);
+                    
+                    children.forEach(child => {
+                        result.push({
+                            ...child,
+                            level: 2,
+                            levelDisplay: '二级菜单'
+                        });
+                    });
+                });
+                
+                return result;
+            }
+
+            // 更新父菜单选择器
+            function updateParentMenuSelect(selectElement, excludeId = null) {
+                const parentMenus = getParentMenus().filter(menu => menu.id !== excludeId);
+                
+                selectElement.innerHTML = '<option value="">选择父菜单（可选）</option>';
+                parentMenus.forEach(menu => {
+                    const option = document.createElement('option');
+                    option.value = menu.id;
+                    option.textContent = menu.name;
+                    selectElement.appendChild(option);
+                });
+            }
+
+            // 打开新增菜单模态框
+            addMenuBtn.addEventListener('click', () => {
+                updateParentMenuSelect(document.getElementById('menuParent'));
+                addMenuModal.style.display = 'block';
+            });
+
+            // 关闭新增模态框
+            closeModalBtn.addEventListener('click', () => {
+                addMenuModal.style.display = 'none';
+                menuForm.reset();
+            });
+
+            cancelBtn.addEventListener('click', () => {
+                addMenuModal.style.display = 'none';
+                menuForm.reset();
+            });
+
+            // 关闭编辑模态框
+            closeEditModalBtn.addEventListener('click', () => {
+                editMenuModal.style.display = 'none';
+                editMenuForm.reset();
+            });
+
+            cancelEditBtn.addEventListener('click', () => {
+                editMenuModal.style.display = 'none';
+                editMenuForm.reset();
+            });
+
+            // 保存新增菜单
+            menuForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const menuName = document.getElementById('menuName').value;
+                const menuParentId = document.getElementById('menuParent').value;
+                const menuPath = document.getElementById('menuPath').value;
+                const menuHidden = document.getElementById('menuHidden').value === 'true';
+
+                const menus = getMenus();
+                const parentId = menuParentId ? parseInt(menuParentId) : null;
+                
+                // 自动计算order值：获取同级菜单的最大order值+1
+                const sameLevelMenus = menus.filter(m => m.parentId === parentId);
+                const nextOrder = sameLevelMenus.length > 0 ? Math.max(...sameLevelMenus.map(m => m.order)) + 1 : 1;
+                
+                const newMenu = {
+                    id: generateNewId(),
+                    name: menuName,
+                    path: menuPath,
+                    order: nextOrder,
+                    hidden: menuHidden,
+                    parentId: parentId
+                };
+
+                menus.push(newMenu);
+                saveMenus(menus);
+                
+                alert('菜单已保存！');
+                menuForm.reset();
+                addMenuModal.style.display = 'none';
+                loadMenuList();
+            });
+
+            // 保存编辑菜单
+            editMenuForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const menuId = parseInt(document.getElementById('editMenuId').value);
+                const menuName = document.getElementById('editMenuName').value;
+                const menuParentId = document.getElementById('editMenuParent').value;
+                const menuPath = document.getElementById('editMenuPath').value;
+                const menuHidden = document.getElementById('editMenuHidden').value === 'true';
+
+                const menus = getMenus();
+                const menuIndex = menus.findIndex(m => m.id === menuId);
+                if (menuIndex !== -1) {
+                    const originalMenu = menus[menuIndex];
+                    
+                    // 如果父菜单改变了，需要重新计算order值
+                    const newParentId = menuParentId ? parseInt(menuParentId) : null;
+                    let newOrder = originalMenu.order;
+                    
+                    if (originalMenu.parentId !== newParentId) {
+                        // 父菜单改变了，计算新的order值
+                        const sameLevelMenus = menus.filter(m => m.parentId === newParentId && m.id !== menuId);
+                        newOrder = sameLevelMenus.length > 0 ? Math.max(...sameLevelMenus.map(m => m.order)) + 1 : 1;
+                    }
+                    
+                    menus[menuIndex] = {
+                        ...originalMenu,
+                        name: menuName,
+                        path: menuPath,
+                        order: newOrder,
+                        hidden: menuHidden,
+                        parentId: newParentId
+                    };
+                    saveMenus(menus);
+                    alert('菜单已更新！');
+                } else {
+                    alert('菜单不存在！');
+                }
+                
+                editMenuModal.style.display = 'none';
+                loadMenuList();
+            });
+
+            // 加载菜单列表
+            function loadMenuList() {
+                const hierarchicalMenus = getHierarchicalMenus();
+
+                menuList.innerHTML = hierarchicalMenus.map((menu, index) => {
+                    const isFirstOfLevel = index === 0 || hierarchicalMenus[index - 1].level !== menu.level || 
+                                          (menu.level === 2 && hierarchicalMenus[index - 1].parentId !== menu.parentId);
+                    const isLastOfLevel = index === hierarchicalMenus.length - 1 || 
+                                         hierarchicalMenus[index + 1].level !== menu.level ||
+                                         (menu.level === 2 && hierarchicalMenus[index + 1].parentId !== menu.parentId);
+                    
+                    // 计算当前层级中的位置，用于禁用按钮
+                    const sameLevelMenus = menu.level === 1 ? 
+                        hierarchicalMenus.filter(m => m.level === 1) :
+                        hierarchicalMenus.filter(m => m.level === 2 && m.parentId === menu.parentId);
+                    const positionInLevel = sameLevelMenus.findIndex(m => m.id === menu.id);
+                    const isFirstInLevel = positionInLevel === 0;
+                    const isLastInLevel = positionInLevel === sameLevelMenus.length - 1;
+
+                    return `
+                        <tr>
+                            <td class="menu-level-${menu.level}">${menu.name}</td>
+                            <td><span class="level-badge level-${menu.level}">${menu.levelDisplay}</span></td>
+                            <td>${menu.path || '-'}</td>
+                            <td>${menu.hidden ? '是' : '否'}</td>
+                            <td class="action-buttons">
+                                <button onclick="editMenu(${JSON.stringify(menu).replace(/"/g, '&quot;')})">
+                                    <i class="fas fa-edit"></i>编辑
+                                </button>
+                                <button onclick="moveMenuUp(${menu.id})" ${isFirstInLevel ? 'disabled style="opacity: 0.5; cursor: not-allowed;"' : ''}>
+                                    <i class="fas fa-arrow-up"></i>上移
+                                </button>
+                                <button onclick="moveMenuDown(${menu.id})" ${isLastInLevel ? 'disabled style="opacity: 0.5; cursor: not-allowed;"' : ''}>
+                                    <i class="fas fa-arrow-down"></i>下移
+                                </button>
+                                <button class="delete-button" onclick="deleteMenu(${menu.id})">
+                                    <i class="fas fa-trash"></i>删除
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+
+            // 编辑菜单
+            window.editMenu = function(menu) {
+                document.getElementById('editMenuId').value = menu.id;
+                document.getElementById('editMenuName').value = menu.name;
+                document.getElementById('editMenuPath').value = menu.path;
+                document.getElementById('editMenuHidden').value = menu.hidden;
+                
+                // 更新父菜单选择器，排除自己（防止循环引用）
+                updateParentMenuSelect(document.getElementById('editMenuParent'), menu.id);
+                document.getElementById('editMenuParent').value = menu.parentId || '';
+                
+                editMenuModal.style.display = 'block';
+            }
+
+            // 上移菜单
+            window.moveMenuUp = function(id) {
+                const menus = getMenus();
+                const currentMenu = menus.find(m => m.id === id);
+                if (!currentMenu) return;
+                
+                // 获取同级菜单（相同parentId）
+                const sameLevelMenus = menus.filter(m => m.parentId === currentMenu.parentId)
+                                           .sort((a, b) => a.order - b.order);
+                const currentIndex = sameLevelMenus.findIndex(m => m.id === id);
+                
+                if (currentIndex > 0) {
+                    // 交换当前菜单和上一个同级菜单的order值
+                    const previousMenu = sameLevelMenus[currentIndex - 1];
+                    const tempOrder = currentMenu.order;
+                    currentMenu.order = previousMenu.order;
+                    previousMenu.order = tempOrder;
+                    
+                    saveMenus(menus);
+                    loadMenuList();
+                    
+                    // 添加简单的视觉反馈
+                    showMessage(`"${currentMenu.name}" 已上移`);
+                }
+            }
+
+            // 下移菜单
+            window.moveMenuDown = function(id) {
+                const menus = getMenus();
+                const currentMenu = menus.find(m => m.id === id);
+                if (!currentMenu) return;
+                
+                // 获取同级菜单（相同parentId）
+                const sameLevelMenus = menus.filter(m => m.parentId === currentMenu.parentId)
+                                           .sort((a, b) => a.order - b.order);
+                const currentIndex = sameLevelMenus.findIndex(m => m.id === id);
+                
+                if (currentIndex < sameLevelMenus.length - 1) {
+                    // 交换当前菜单和下一个同级菜单的order值
+                    const nextMenu = sameLevelMenus[currentIndex + 1];
+                    const tempOrder = currentMenu.order;
+                    currentMenu.order = nextMenu.order;
+                    nextMenu.order = tempOrder;
+                    
+                    saveMenus(menus);
+                    loadMenuList();
+                    
+                    // 添加简单的视觉反馈
+                    showMessage(`"${currentMenu.name}" 已下移`);
+                }
+            }
+
+            // 删除菜单
+            window.deleteMenu = function(id) {
+                const menus = getMenus();
+                const menuToDelete = menus.find(m => m.id === id);
+                
+                if (!menuToDelete) {
+                    alert('菜单不存在！');
+                    return;
+                }
+                
+                // 检查是否有子菜单
+                const childMenus = menus.filter(m => m.parentId === id);
+                if (childMenus.length > 0) {
+                    const childNames = childMenus.map(m => m.name).join('、');
+                    alert(`无法删除 "${menuToDelete.name}"，因为它包含以下子菜单：${childNames}\n\n请先删除子菜单。`);
+                    return;
+                }
+                
+                if (confirm(`确定删除菜单 "${menuToDelete.name}" 吗？`)) {
+                    const filteredMenus = menus.filter(m => m.id !== id);
+                    saveMenus(filteredMenus);
+                    loadMenuList();
+                    showMessage(`菜单 "${menuToDelete.name}" 已删除`);
+                }
+            }
+
+            // 显示消息提示
+            function showMessage(message) {
+                // 创建临时消息提示
+                const messageDiv = document.createElement('div');
+                messageDiv.textContent = message;
+                messageDiv.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    background-color: #007aff;
+                    color: white;
+                    padding: 12px 20px;
+                    border-radius: 6px;
+                    z-index: 2000;
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                    font-size: 14px;
+                    font-weight: 500;
+                    opacity: 0;
+                    transition: opacity 0.3s ease;
+                `;
+                
+                document.body.appendChild(messageDiv);
+                
+                // 动画显示
+                setTimeout(() => {
+                    messageDiv.style.opacity = '1';
+                }, 100);
+                
+                // 3秒后移除
+                setTimeout(() => {
+                    messageDiv.style.opacity = '0';
+                    setTimeout(() => {
+                        if (messageDiv.parentNode) {
+                            document.body.removeChild(messageDiv);
+                        }
+                    }, 300);
+                }, 3000);
+            }
+
+            // 点击模态框外部关闭
+            window.addEventListener('click', (event) => {
+                if (event.target === addMenuModal) {
+                    addMenuModal.style.display = 'none';
+                    menuForm.reset();
+                }
+                if (event.target === editMenuModal) {
+                    editMenuModal.style.display = 'none';
+                    editMenuForm.reset();
+                }
+            });
+
+            // 初始化数据并加载列表
+            initializeMenuData();
+            loadMenuList();
+        });
+    </script>
+</body>
+</html> 

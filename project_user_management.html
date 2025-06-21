@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>项目用户分配 - 数据平台权限管理</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: #f0f2f5;
+            color: #333;
+        }
+        .app-container {
+            max-width: none;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .content-area {
+            padding: 0;
+            flex-grow: 1;
+        }
+        .controls-section {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .controls-section label {
+            font-weight: 500;
+            color: #333;
+            font-size: 0.9375rem;
+        }
+        .controls-section select {
+            padding: 8px 12px;
+            border: 1px solid #d1d1d6;
+            border-radius: 8px;
+            min-width: 200px;
+            background-color: #FFFFFF;
+            color: #333;
+            font-size: 0.9375rem;
+        }
+        .table-container {
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 12px 16px;
+            text-align: left;
+            border-bottom: 1px solid #e5e5e5;
+            font-size: 0.9375rem;
+        }
+        th {
+            background-color: #f7f7f7;
+            font-weight: 500;
+            color: #333;
+        }
+        td {
+            color: #555;
+        }
+        tr:last-child td {
+            border-bottom: none;
+        }
+        .action-buttons button, .action-buttons a {
+            color: #007aff;
+            background: none;
+            border: none;
+            padding: 6px 8px;
+            margin-right: 8px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            border-radius: 6px;
+            transition: background-color 0.2s ease;
+        }
+        .action-buttons button:hover, .action-buttons a:hover {
+            background-color: #e7f3ff;
+        }
+        .action-buttons .delete-button {
+            color: #ff3b30;
+        }
+        .action-buttons .delete-button:hover {
+            background-color: #ffebee;
+        }
+        .add-button {
+            background-color: #007aff;
+            color: white;
+            padding: 10px 18px;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.9375rem;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+        }
+        .add-button i {
+            margin-right: 8px;
+        }
+        .add-button:hover {
+            background-color: #005bb5;
+        }
+        .add-button:disabled {
+            background-color: #a0a0a0;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+        .empty-table-message {
+            text-align: center;
+            padding: 32px 16px;
+            font-size: 1rem;
+            color: #888;
+        }
+        .project-selection-prompt {
+            text-align: center;
+            padding: 40px 20px;
+            background-color: #f0f8ff;
+            border: 1px solid #b3d9ff;
+            color: #0066cc;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            margin-top: 20px;
+        }
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 10% auto;
+            padding: 24px;
+            border: 1px solid #d1d1d6;
+            width: 90%;
+            max-width: 500px;
+            border-radius: 14px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .modal-header h2 {
+            font-size: 1.125rem;
+            font-weight: 600;
+        }
+        .close-button {
+            color: #aaa;
+            font-size: 24px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .close-button:hover,
+        .close-button:focus {
+            color: black;
+        }
+        .form-group {
+            margin-bottom: 16px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 0.875rem;
+            color: #333;
+            font-weight: 500;
+        }
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #d1d1d6;
+            border-radius: 8px;
+            font-size: 0.9375rem;
+            box-sizing: border-box;
+        }
+        .form-group select:disabled {
+            background-color: #f5f5f5;
+            color: #999;
+            cursor: not-allowed;
+        }
+        .form-actions {
+            text-align: right;
+            margin-top: 24px;
+        }
+        .form-actions button {
+            padding: 10px 18px;
+            border-radius: 8px;
+            font-size: 0.9375rem;
+            cursor: pointer;
+            border: none;
+            margin-left: 10px;
+        }
+        .form-actions .save-button {
+            background-color: #007aff;
+            color: white;
+        }
+        .form-actions .cancel-button {
+            background-color: #e5e5e5;
+            color: #333;
+        }
+        /* Tech Blue Theme Styles for project_user_management.html */
+        #mainContentPortal .content-area {
+            padding: 20px;
+            flex-grow: 1;
+        }
+
+        #mainContentPortal .table-container {
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+            border: 1px solid #CBD5E0;
+        }
+
+        #mainContentPortal table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        #mainContentPortal th, #mainContentPortal td {
+            padding: 12px 16px;
+            text-align: left;
+            border-bottom: 1px solid #E2E8F0;
+            font-size: 0.9375rem;
+        }
+
+        #mainContentPortal th {
+            background-color: #F7FAFC;
+            font-weight: 600;
+            color: #2D3748;
+            text-transform: uppercase;
+            font-size: 0.875rem;
+        }
+
+        #mainContentPortal td {
+            color: #4A5568;
+        }
+
+        #mainContentPortal tr:last-child td {
+            border-bottom: none;
+        }
+
+        #mainContentPortal .action-buttons button, 
+        #mainContentPortal .action-buttons a {
+            color: #3182CE;
+            background: none;
+            border: 1px solid transparent;
+            padding: 6px 10px;
+            margin-right: 8px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+        }
+        #mainContentPortal .action-buttons button i,
+        #mainContentPortal .action-buttons a i {
+            margin-right: 4px;
+        }
+
+        #mainContentPortal .action-buttons button:hover, 
+        #mainContentPortal .action-buttons a:hover {
+            background-color: #EBF8FF;
+            border-color: #90CDF4;
+            color: #2B6CB0;
+        }
+
+        #mainContentPortal .action-buttons .delete-button {
+            color: #E53E3E;
+        }
+
+        #mainContentPortal .action-buttons .delete-button:hover {
+            background-color: #FFF5F5;
+            border-color: #FEB2B2;
+            color: #C53030;
+        }
+
+        #mainContentPortal .add-button {
+            background-color: #3182CE;
+            color: white;
+            padding: 10px 18px;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.9375rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            margin-bottom: 20px;
+            display: inline-flex;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        #mainContentPortal .add-button i {
+            margin-right: 8px;
+        }
+        #mainContentPortal .add-button:hover {
+            background-color: #2B6CB0;
+        }
+        #mainContentPortal .add-button:disabled {
+            background-color: #A0AEC0;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        #mainContentPortal .controls-section {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        #mainContentPortal .controls-section label {
+            font-weight: 500;
+            color: #2D3748;
+            font-size: 0.9375rem;
+        }
+        #mainContentPortal .controls-section select {
+            padding: 8px 12px;
+            border: 1px solid #CBD5E0;
+            border-radius: 6px;
+            min-width: 200px;
+            background-color: #FFFFFF;
+            color: #2D3748;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+            font-size: 0.9375rem;
+        }
+        #mainContentPortal .controls-section select:focus {
+            border-color: #3182CE;
+            box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.2);
+            outline: none;
+        }
+
+        #mainContentPortal .empty-table-message {
+            text-align: center;
+            padding: 32px 16px;
+            font-size: 1rem;
+            color: #718096;
+        }
+        #mainContentPortal .project-selection-prompt {
+            text-align: center;
+            padding: 40px 20px;
+            background-color: #EBF8FF;
+            border: 1px solid #90CDF4;
+            color: #2C5282;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            margin-top: 20px;
+        }
+
+        /* Modal styles using a specific class */
+        .pu-modal-styling.modal {
+            display: none;
+            position: fixed;
+            z-index: 1050;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .pu-modal-styling .modal-content {
+            background-color: #ffffff;
+            margin: 8% auto;
+            padding: 24px;
+            border: 1px solid #E2E8F0;
+            width: 90%;
+            max-width: 500px;
+            border-radius: 8px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1), 0 5px 10px rgba(0,0,0,0.04);
+        }
+
+        .pu-modal-styling .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #E2E8F0;
+        }
+
+        .pu-modal-styling .modal-header h2 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #2A4365;
+        }
+
+        .pu-modal-styling .close-button {
+            color: #718096;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            background: none;
+            border: none;
+            padding: 0 4px;
+            line-height: 1;
+        }
+        .pu-modal-styling .close-button:hover {
+            color: #2D3748;
+        }
+
+        .pu-modal-styling .form-group {
+            margin-bottom: 16px;
+        }
+
+        .pu-modal-styling .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 0.875rem;
+            color: #4A5568;
+            font-weight: 500;
+        }
+
+        .pu-modal-styling .form-group select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #CBD5E0;
+            border-radius: 6px;
+            font-size: 0.9375rem;
+            box-sizing: border-box;
+            background-color: #FFFFFF;
+            color: #2D3748;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+        .pu-modal-styling .form-group select:focus {
+            border-color: #3182CE;
+            box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.2);
+            outline: none;
+        }
+        .pu-modal-styling .form-group select[disabled] {
+            background-color: #F7FAFC;
+            color: #A0AEC0;
+            cursor: not-allowed;
+        }
+
+        .pu-modal-styling .form-actions {
+            text-align: right;
+            margin-top: 24px;
+            padding-top: 16px;
+            border-top: 1px solid #E2E8F0;
+        }
+
+        .pu-modal-styling .form-actions button {
+            padding: 10px 18px;
+            border-radius: 6px;
+            font-size: 0.9375rem;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            margin-left: 10px;
+            transition: background-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .pu-modal-styling .form-actions .save-button {
+            background-color: #3182CE;
+            color: white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .pu-modal-styling .form-actions .save-button:hover {
+            background-color: #2B6CB0;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+        }
+
+        .pu-modal-styling .form-actions .cancel-button {
+            background-color: #E2E8F0;
+            color: #4A5568;
+            border: 1px solid #CBD5E0;
+        }
+        .pu-modal-styling .form-actions .cancel-button:hover {
+            background-color: #CBD5E0;
+            border-color: #A0AEC0;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <main class="content-area">
+            <div class="controls-section">
+                <label for="pu_projectSelect">选择项目:</label>
+                <select id="pu_projectSelect">
+                    <option value="">-- 请选择一个项目 --</option>
+                </select>
+                <button id="pu_addUserToProjectBtn" class="add-button" disabled>
+                    <i class="fas fa-user-plus"></i> 添加用户到项目
+                </button>
+            </div>
+
+            <div id="pu_userAssignmentTableContainer" class="table-container" style="display: none;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>用户ID</th>
+                            <th>用户名</th>
+                            <th>邮箱</th>
+                            <th>项目角色</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="pu_projectUserTableBody">
+                        <!-- Populated by JS -->
+                    </tbody>
+                </table>
+            </div>
+            <div id="pu_projectSelectionPrompt" class="project-selection-prompt">
+                <p><i class="fas fa-info-circle"></i> 请先从上方选择一个项目以查看或管理其用户分配。</p>
+            </div>
+        </main>
+    </div>
+
+    <div id="pu_assignmentModal" class="modal pu-modal-styling">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="pu_modalTitle">添加用户到项目</h2>
+                <button type="button" class="close-button" data-close-pu-modal>&times;</button>
+            </div>
+            <form id="pu_assignmentForm">
+                <input type="hidden" id="pu_assignmentId">
+                <input type="hidden" id="pu_editingUserId"> 
+                <div class="form-group">
+                    <label for="pu_platformUserSelect">选择平台用户:</label>
+                    <select id="pu_platformUserSelect" name="platformUser" required>
+                        <!-- Platform users will be populated by JS -->
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="pu_projectRoleSelect">选择项目角色:</label>
+                    <select id="pu_projectRoleSelect" name="projectRole" required>
+                        <!-- Project roles will be populated by JS -->
+                    </select>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="cancel-button" data-cancel-pu-modal>取消</button>
+                    <button type="submit" class="save-button">保存分配</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+<script>
+    (function() { // IIFE for local scope
+        const projectSelectId = 'pu_projectSelect';
+        const addUserBtnId = 'pu_addUserToProjectBtn';
+        const tableContainerId = 'pu_userAssignmentTableContainer';
+        const tableBodyId = 'pu_projectUserTableBody';
+        const selectionPromptId = 'pu_projectSelectionPrompt';
+        
+        const modalId = 'pu_assignmentModal';
+        const formId = 'pu_assignmentForm';
+        const modalTitleId = 'pu_modalTitle';
+        const assignmentIdInputId = 'pu_assignmentId';
+        const editingUserIdInputId = 'pu_editingUserId';
+        const platformUserSelectId = 'pu_platformUserSelect';
+        const projectRoleSelectId = 'pu_projectRoleSelect';
+
+        if (document.getElementById(tableBodyId) && document.getElementById(tableBodyId).dataset.initialized === 'true') {
+            return;
+        }
+
+        const projectSelect = document.getElementById(projectSelectId);
+        const addUserToProjectBtn = document.getElementById(addUserBtnId);
+        const userAssignmentTableContainer = document.getElementById(tableContainerId);
+        const projectUserTableBody = document.getElementById(tableBodyId);
+        const projectSelectionPrompt = document.getElementById(selectionPromptId);
+
+        const assignmentModal = document.getElementById(modalId);
+        const assignmentForm = document.getElementById(formId);
+        const modalTitle = document.getElementById(modalTitleId);
+        const assignmentIdInput = document.getElementById(assignmentIdInputId);
+        const editingUserIdInput = document.getElementById(editingUserIdInputId);
+        const platformUserSelect = document.getElementById(platformUserSelectId);
+        const projectRoleSelect = document.getElementById(projectRoleSelectId);
+
+        if (!projectSelect || !addUserToProjectBtn || !userAssignmentTableContainer || !projectUserTableBody || 
+            !assignmentModal || !assignmentForm || !projectSelectionPrompt) {
+            return;
+        }
+
+        const LS_PROJECTS_KEY = 'dataPlatformProjects';
+        const LS_USERS_KEY = 'dataPlatformUsers';
+        const LS_ROLES_KEY = 'dataPlatformRoles';
+        const LS_ASSIGNMENTS_KEY = 'dataPlatformProjectUserAssignments';
+
+        let allProjects = [];
+        let allUsers = [];
+        let allRoles = [];
+        let projectUserAssignments = [];
+        let currentSelectedProjectId = null;
+
+        function loadInitialData() {
+            const projectsData = localStorage.getItem(LS_PROJECTS_KEY);
+            allProjects = projectsData ? JSON.parse(projectsData) : [];
+
+            const usersData = localStorage.getItem(LS_USERS_KEY);
+            allUsers = usersData ? JSON.parse(usersData) : [];
+
+            const rolesData = localStorage.getItem(LS_ROLES_KEY);
+            allRoles = rolesData ? JSON.parse(rolesData) : [];
+
+            // 检查localStorage中的分配数据
+            const assignmentsData = localStorage.getItem(LS_ASSIGNMENTS_KEY);
+            console.log('localStorage中的分配数据:', assignmentsData);
+            
+            if (assignmentsData) {
+                try {
+                    projectUserAssignments = JSON.parse(assignmentsData);
+                    console.log('解析后的分配数据:', projectUserAssignments);
+                    
+                    // 检查数据完整性，如果有问题就重置
+                    const hasValidData = projectUserAssignments.every(a => a.id && a.projectId && a.userId && a.roleId);
+                    if (!hasValidData) {
+                        console.log('检测到数据不完整，重置为默认数据');
+                        projectUserAssignments = [
+                            { id: 'assign_001', projectId: 'proj_001', userId: 'user_001', roleId: 'role_project_manager', assignedAt: '2023-03-15T10:00:00Z' },
+                            { id: 'assign_002', projectId: 'proj_001', userId: 'user_002', roleId: 'role_project_analyst', assignedAt: '2023-03-16T14:30:00Z' },
+                            { id: 'assign_003', projectId: 'proj_001', userId: 'user_006', roleId: 'role_project_developer', assignedAt: '2023-03-20T09:15:00Z' },
+                            { id: 'assign_004', projectId: 'proj_002', userId: 'user_002', roleId: 'role_project_manager', assignedAt: '2023-04-20T15:00:00Z' },
+                            { id: 'assign_005', projectId: 'proj_002', userId: 'user_003', roleId: 'role_project_analyst', assignedAt: '2023-04-22T11:20:00Z' },
+                            { id: 'assign_006', projectId: 'proj_002', userId: 'user_007', roleId: 'role_project_viewer', assignedAt: '2023-04-25T16:45:00Z' },
+                            { id: 'assign_007', projectId: 'proj_003', userId: 'user_003', roleId: 'role_project_manager', assignedAt: '2023-05-10T12:00:00Z' },
+                            { id: 'assign_008', projectId: 'proj_003', userId: 'user_004', roleId: 'role_project_developer', assignedAt: '2023-05-12T10:30:00Z' },
+                            { id: 'assign_009', projectId: 'proj_004', userId: 'user_004', roleId: 'role_project_manager', assignedAt: '2023-06-05T16:30:00Z' },
+                            { id: 'assign_010', projectId: 'proj_004', userId: 'user_006', roleId: 'role_project_analyst', assignedAt: '2023-06-08T13:15:00Z' },
+                            { id: 'assign_011', projectId: 'proj_005', userId: 'user_001', roleId: 'role_project_manager', assignedAt: '2023-07-12T10:15:00Z' },
+                            { id: 'assign_012', projectId: 'proj_005', userId: 'user_007', roleId: 'role_project_developer', assignedAt: '2023-07-15T14:00:00Z' },
+                            { id: 'assign_013', projectId: 'proj_005', userId: 'user_002', roleId: 'role_project_viewer', assignedAt: '2023-07-18T11:30:00Z' }
+                        ];
+                        localStorage.setItem(LS_ASSIGNMENTS_KEY, JSON.stringify(projectUserAssignments));
+                    }
+                } catch (e) {
+                    console.error('解析分配数据失败:', e);
+                    projectUserAssignments = [
+                        { id: 'assign_001', projectId: 'proj_001', userId: 'user_001', roleId: 'role_project_manager', assignedAt: '2023-03-15T10:00:00Z' },
+                        { id: 'assign_002', projectId: 'proj_001', userId: 'user_002', roleId: 'role_project_analyst', assignedAt: '2023-03-16T14:30:00Z' },
+                        { id: 'assign_003', projectId: 'proj_001', userId: 'user_006', roleId: 'role_project_developer', assignedAt: '2023-03-20T09:15:00Z' },
+                        { id: 'assign_004', projectId: 'proj_002', userId: 'user_002', roleId: 'role_project_manager', assignedAt: '2023-04-20T15:00:00Z' },
+                        { id: 'assign_005', projectId: 'proj_002', userId: 'user_003', roleId: 'role_project_analyst', assignedAt: '2023-04-22T11:20:00Z' },
+                        { id: 'assign_006', projectId: 'proj_002', userId: 'user_007', roleId: 'role_project_viewer', assignedAt: '2023-04-25T16:45:00Z' },
+                        { id: 'assign_007', projectId: 'proj_003', userId: 'user_003', roleId: 'role_project_manager', assignedAt: '2023-05-10T12:00:00Z' },
+                        { id: 'assign_008', projectId: 'proj_003', userId: 'user_004', roleId: 'role_project_developer', assignedAt: '2023-05-12T10:30:00Z' },
+                        { id: 'assign_009', projectId: 'proj_004', userId: 'user_004', roleId: 'role_project_manager', assignedAt: '2023-06-05T16:30:00Z' },
+                        { id: 'assign_010', projectId: 'proj_004', userId: 'user_006', roleId: 'role_project_analyst', assignedAt: '2023-06-08T13:15:00Z' },
+                        { id: 'assign_011', projectId: 'proj_005', userId: 'user_001', roleId: 'role_project_manager', assignedAt: '2023-07-12T10:15:00Z' },
+                        { id: 'assign_012', projectId: 'proj_005', userId: 'user_007', roleId: 'role_project_developer', assignedAt: '2023-07-15T14:00:00Z' },
+                        { id: 'assign_013', projectId: 'proj_005', userId: 'user_002', roleId: 'role_project_viewer', assignedAt: '2023-07-18T11:30:00Z' }
+                    ];
+                    localStorage.setItem(LS_ASSIGNMENTS_KEY, JSON.stringify(projectUserAssignments));
+                }
+            } else {
+                projectUserAssignments = [
+                    { id: 'assign_001', projectId: 'proj_001', userId: 'user_001', roleId: 'role_project_manager', assignedAt: '2023-03-15T10:00:00Z' },
+                    { id: 'assign_002', projectId: 'proj_001', userId: 'user_002', roleId: 'role_project_analyst', assignedAt: '2023-03-16T14:30:00Z' },
+                    { id: 'assign_003', projectId: 'proj_001', userId: 'user_006', roleId: 'role_project_developer', assignedAt: '2023-03-20T09:15:00Z' },
+                    { id: 'assign_004', projectId: 'proj_002', userId: 'user_002', roleId: 'role_project_manager', assignedAt: '2023-04-20T15:00:00Z' },
+                    { id: 'assign_005', projectId: 'proj_002', userId: 'user_003', roleId: 'role_project_analyst', assignedAt: '2023-04-22T11:20:00Z' },
+                    { id: 'assign_006', projectId: 'proj_002', userId: 'user_007', roleId: 'role_project_viewer', assignedAt: '2023-04-25T16:45:00Z' },
+                    { id: 'assign_007', projectId: 'proj_003', userId: 'user_003', roleId: 'role_project_manager', assignedAt: '2023-05-10T12:00:00Z' },
+                    { id: 'assign_008', projectId: 'proj_003', userId: 'user_004', roleId: 'role_project_developer', assignedAt: '2023-05-12T10:30:00Z' },
+                    { id: 'assign_009', projectId: 'proj_004', userId: 'user_004', roleId: 'role_project_manager', assignedAt: '2023-06-05T16:30:00Z' },
+                    { id: 'assign_010', projectId: 'proj_004', userId: 'user_006', roleId: 'role_project_analyst', assignedAt: '2023-06-08T13:15:00Z' },
+                    { id: 'assign_011', projectId: 'proj_005', userId: 'user_001', roleId: 'role_project_manager', assignedAt: '2023-07-12T10:15:00Z' },
+                    { id: 'assign_012', projectId: 'proj_005', userId: 'user_007', roleId: 'role_project_developer', assignedAt: '2023-07-15T14:00:00Z' },
+                    { id: 'assign_013', projectId: 'proj_005', userId: 'user_002', roleId: 'role_project_viewer', assignedAt: '2023-07-18T11:30:00Z' }
+                ];
+                localStorage.setItem(LS_ASSIGNMENTS_KEY, JSON.stringify(projectUserAssignments));
+            }
+            
+            console.log('最终的分配数据:', projectUserAssignments);
+        }
+
+        function populateProjectSelect() {
+            projectSelect.innerHTML = '<option value="">-- 请选择一个项目 --</option>';
+            allProjects.forEach(project => {
+                const option = document.createElement('option');
+                option.value = project.id;
+                option.textContent = project.name;
+                projectSelect.appendChild(option);
+            });
+        }
+
+        function renderProjectUsers(projectId) {
+            currentSelectedProjectId = projectId;
+            if (!currentSelectedProjectId) {
+                userAssignmentTableContainer.style.display = 'none';
+                projectSelectionPrompt.style.display = 'block';
+                addUserToProjectBtn.disabled = true;
+                return;
+            }
+            userAssignmentTableContainer.style.display = 'block';
+            projectSelectionPrompt.style.display = 'none';
+            addUserToProjectBtn.disabled = false;
+
+            projectUserTableBody.innerHTML = '';
+            const usersInProject = projectUserAssignments.filter(a => a.projectId === projectId);
+            
+            console.log('当前项目的用户分配:', usersInProject);
+
+            if (usersInProject.length === 0) {
+                projectUserTableBody.innerHTML = `<tr><td colspan="5" class="empty-table-message">此项目暂无分配用户</td></tr>`;
+                return;
+            }
+
+            usersInProject.forEach(assignment => {
+                console.log('处理分配记录:', assignment);
+                const user = allUsers.find(u => u.id === assignment.userId);
+                const role = allRoles.find(r => r.id === assignment.roleId);
+                if (!user || !role) return;
+
+                const rowHTML = `
+                    <tr>
+                        <td>${user.id}</td>
+                        <td>${user.username}</td>
+                        <td>${user.email}</td>
+                        <td>${role.name}</td>
+                        <td class="action-buttons">
+                            <button data-edit-assignment-id="${assignment.id}">
+                                <i class="fas fa-edit"></i> 编辑角色
+                            </button>
+                            <button class="delete-button" data-delete-assignment-id="${assignment.id}">
+                                <i class="fas fa-trash-alt"></i> 移除
+                            </button>
+                        </td>
+                    </tr>
+                `;
+                console.log('生成的HTML:', rowHTML);
+                projectUserTableBody.insertAdjacentHTML('beforeend', rowHTML);
+            });
+        }
+
+        function populateModalDropdowns(mode = 'add', existingAssignment = null) {
+            if (mode === 'edit' && existingAssignment) {
+                // 编辑模式：只显示当前用户名，不可选择
+                const user = allUsers.find(u => u.id === existingAssignment.userId);
+                platformUserSelect.innerHTML = `<option value="${user.id}" selected>${user.username} (${user.email})</option>`;
+                platformUserSelect.disabled = true;
+            } else {
+                // 新增模式：显示可选择的用户列表
+                platformUserSelect.innerHTML = '<option value="">-- 选择用户 --</option>';
+                platformUserSelect.disabled = false;
+                
+                let usersAlreadyInProject = [];
+                if (currentSelectedProjectId) {
+                    usersAlreadyInProject = projectUserAssignments
+                        .filter(a => a.projectId === currentSelectedProjectId)
+                        .map(a => a.userId);
+                }
+
+                allUsers.filter(u => u.status === 'active').forEach(user => {
+                    if (usersAlreadyInProject.includes(user.id)) {
+                        return; // 跳过已分配的用户
+                    }
+                    const option = document.createElement('option');
+                    option.value = user.id;
+                    option.textContent = `${user.username} (${user.email})`;
+                    platformUserSelect.appendChild(option);
+                });
+            }
+
+            // 角色选择 - 始终可选择
+            projectRoleSelect.innerHTML = '<option value="">-- 选择角色 --</option>';
+            projectRoleSelect.disabled = false;
+            
+            const projectSpecificRoles = allRoles.filter(r => r.type === 'project');
+            projectSpecificRoles.forEach(role => {
+                const option = document.createElement('option');
+                option.value = role.id;
+                option.textContent = role.name;
+                if (mode === 'edit' && existingAssignment && role.id === existingAssignment.roleId) {
+                    option.selected = true;
+                }
+                projectRoleSelect.appendChild(option);
+            });
+        }
+
+        function openAssignmentModal(isEdit = false, assignmentIdToEdit = null) {
+            assignmentForm.reset();
+            assignmentIdInput.value = '';
+            editingUserIdInput.value = '';
+            let existingAssignment = null;
+
+            if (isEdit && assignmentIdToEdit) {
+                existingAssignment = projectUserAssignments.find(a => a.id === assignmentIdToEdit);
+                
+                if (existingAssignment) {
+                    const user = allUsers.find(u => u.id === existingAssignment.userId);
+                    const userName = user ? user.username : '未知用户';
+                    modalTitle.textContent = `编辑用户角色 - ${userName}`;
+                    assignmentIdInput.value = existingAssignment.id;
+                    editingUserIdInput.value = existingAssignment.userId;
+                    populateModalDropdowns('edit', existingAssignment);
+                } else {
+                    alert('未找到分配记录！');
+                    return;
+                }
+            } else {
+                modalTitle.textContent = '添加用户到项目';
+                populateModalDropdowns('add');
+            }
+            assignmentModal.style.display = 'block';
+        }
+
+        function closeAssignmentModal() {
+            assignmentModal.style.display = 'none';
+        }
+
+        projectSelect.onchange = function() {
+            renderProjectUsers(this.value);
+        };
+
+        addUserToProjectBtn.onclick = () => {
+            if (currentSelectedProjectId) {
+                openAssignmentModal(false);
+            } else {
+                alert('请先选择一个项目。');
+            }
+        };
+
+        projectUserTableBody.addEventListener('click', function(event) {
+            const editButton = event.target.closest('button[data-edit-assignment-id]');
+            const deleteButton = event.target.closest('button.delete-button[data-delete-assignment-id]');
+
+            if (editButton) {
+                const assignmentId = editButton.getAttribute('data-edit-assignment-id');
+                openAssignmentModal(true, assignmentId);
+            }
+            if (deleteButton) {
+                const assignmentIdToDelete = deleteButton.getAttribute('data-delete-assignment-id');
+                if (confirm('确定要从此项目中移除该用户吗？')) {
+                    projectUserAssignments = projectUserAssignments.filter(a => a.id !== assignmentIdToDelete);
+                    saveAndRenderAssignments();
+                }
+            }
+        });
+
+        const closeBtn = assignmentModal.querySelector('button[data-close-pu-modal]');
+        if(closeBtn) closeBtn.onclick = closeAssignmentModal;
+        const cancelBtn = assignmentModal.querySelector('button[data-cancel-pu-modal]');
+        if(cancelBtn) cancelBtn.onclick = closeAssignmentModal;
+
+        assignmentForm.onsubmit = function(event) {
+            event.preventDefault();
+            const assignmentId = assignmentIdInput.value;
+            const roleId = projectRoleSelect.value;
+            const projectId = currentSelectedProjectId;
+
+            if (!projectId || !roleId) {
+                alert('项目和角色都必须选择。');
+                return;
+            }
+
+            if (assignmentId) { // 编辑模式
+                const assignmentIndex = projectUserAssignments.findIndex(a => a.id === assignmentId);
+                if (assignmentIndex > -1) {
+                    // 只更新角色，保持用户和项目不变
+                    projectUserAssignments[assignmentIndex] = { 
+                        ...projectUserAssignments[assignmentIndex], 
+                        roleId: roleId 
+                    };
+                }
+            } else { // 新增模式
+                const userId = platformUserSelect.value;
+                if (!userId) {
+                    alert('请选择用户。');
+                    return;
+                }
+                
+                const alreadyAssigned = projectUserAssignments.some(a => a.projectId === projectId && a.userId === userId);
+                if (alreadyAssigned) {
+                    alert('该用户已分配到此项目。如需更改角色，请编辑现有分配。');
+                    return;
+                }
+                const newAssignment = {
+                    id: 'assign_' + new Date().getTime().toString().slice(-6) + Math.random().toString(36).substring(2, 5),
+                    projectId,
+                    userId,
+                    roleId
+                };
+                projectUserAssignments.push(newAssignment);
+            }
+            saveAndRenderAssignments();
+            closeAssignmentModal();
+        };
+
+        function saveAndRenderAssignments() {
+            localStorage.setItem(LS_ASSIGNMENTS_KEY, JSON.stringify(projectUserAssignments));
+            if (currentSelectedProjectId) {
+                renderProjectUsers(currentSelectedProjectId);
+            }
+        }
+
+        loadInitialData();
+        populateProjectSelect();
+        renderProjectUsers(null);
+        
+        if (projectUserTableBody) {
+            projectUserTableBody.dataset.initialized = 'true';
+        }
+    })();
+</script>
+</body>
+</html> 

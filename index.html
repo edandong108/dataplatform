@@ -1,0 +1,2148 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>统一数据开发平台</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: #EDF2F7; /* Tech Blue: Light gray-blue background */
+            color: #1A202C; /* Tech Blue: Darker gray for text */
+            margin: 0;
+        }
+        .app-wrapper {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        .app-header {
+            background: linear-gradient(135deg, #2A4365 0%, #2B6CB1 100%); /* Tech Blue: Gradient header */
+            color: #EBF8FF; /* Tech Blue: Light blue text for header */
+            padding: 16px 24px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            z-index: 10;
+            backdrop-filter: blur(10px);
+        }
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+        }
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+        }
+        .platform-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin: 0;
+        }
+        .project-switcher {
+            display: flex;
+            align-items: center;
+        }
+        .project-select {
+            background-color: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            color: #EBF8FF;
+            padding: 8px 16px;
+            font-size: 0.875rem;
+            min-width: 200px;
+            outline: none;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        .project-select:hover {
+            background-color: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.3);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        .project-select:focus {
+            background-color: rgba(255, 255, 255, 0.2);
+            border-color: #63B3ED;
+            box-shadow: 0 0 0 3px rgba(99, 179, 237, 0.3), 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        .project-select option {
+            background-color: #1A202C;
+            color: #EBF8FF;
+            padding: 8px;
+        }
+        .header-right {
+            display: flex;
+            align-items: center;
+        }
+        .user-info {
+            font-size: 0.875rem;
+            color: #CBD5E0;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .user-info i {
+            font-size: 1.1rem;
+        }
+        .main-container {
+            display: flex;
+            flex-grow: 1;
+        }
+        .sidebar {
+            width: 260px;
+            background-color: #1A202C; /* Tech Blue: Very dark sidebar */
+            padding-top: 20px;
+            border-right: 1px solid #2D3748; /* Tech Blue: Dark border */
+            box-shadow: 1px 0 3px rgba(0,0,0,0.08);
+            display: flex;
+            flex-direction: column;
+            color: #A0AEC0; /* Tech Blue: Grayish text for sidebar */
+        }
+        .sidebar-menu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .sidebar-menu-item > button, .sidebar-menu-item > a {
+            display: flex;
+            align-items: center;
+            padding: 14px 20px; /* Increased padding */
+            color: #CBD5E0; /* Tech Blue: Lighter gray text for items */
+            text-decoration: none;
+            font-size: 0.95rem;
+            border: none;
+            background: none;
+            width: 100%;
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+        .sidebar-menu-item > button:hover, .sidebar-menu-item > a:hover {
+            background-color: #2D3748; /* Tech Blue: Darker hover background */
+            color: #EBF8FF; /* Tech Blue: Light blue text for hover */
+        }
+        
+        /* 活动状态样式 - 更明显的高亮 */
+        .sidebar-menu-item.active > a, .sidebar-menu-item > a.active {
+            background-color: #3182CE; /* Tech Blue: Bright blue for active */
+            color: #FFFFFF; /* White text for active */
+            font-weight: 600;
+            border-left: 4px solid #63B3ED; /* Left border indicator */
+            padding-left: 16px; /* Adjust padding for border */
+        }
+        
+        .sidebar-menu-item > button.active-parent {
+            background-color: #2D3748; /* Tech Blue: Darker background for active parent */
+            color: #EBF8FF; /* Tech Blue: Light blue text for active parent */
+            font-weight: 500;
+        }
+        
+        .sidebar-menu-item i.menu-icon {
+            margin-right: 12px;
+            width: 20px;
+            text-align: center;
+            color: #718096; /* Tech Blue: Muted icon color */
+            transition: color 0.2s ease;
+        }
+        .sidebar-menu-item > button:hover i.menu-icon, .sidebar-menu-item > a:hover i.menu-icon {
+            color: #63B3ED; /* Tech Blue: Bright blue for hover icons */
+        }
+        
+        /* 活动状态图标样式 */
+        .sidebar-menu-item.active > a i.menu-icon, .sidebar-menu-item > a.active i.menu-icon {
+            color: #FFFFFF; /* White icon for active */
+        }
+        
+        .sidebar-menu-item > button.active-parent i.menu-icon {
+            color: #63B3ED; /* Tech Blue: Bright blue for active parent icons */
+        }
+        
+        .sidebar-menu-item > button i.toggle-icon {
+            margin-left: auto;
+            transition: transform 0.2s ease;
+        }
+        .sidebar-menu-item > button.collapsed i.toggle-icon {
+            transform: rotate(-90deg);
+        }
+        .submenu {
+            list-style: none;
+            padding-left: 0;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+            background-color: #2D3748; /* Tech Blue: Submenu background slightly different */
+        }
+        .submenu.open {
+            max-height: 500px;
+        }
+        .submenu-item a {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px 12px 42px;
+            color: #A0AEC0; /* Tech Blue: Submenu item text color */
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+        .submenu-item a:hover {
+            background-color: #4A5568; /* Tech Blue: Darker hover for submenu */
+            color: #EBF8FF;
+        }
+        
+        /* 子菜单活动状态样式 - 更明显的高亮 */
+        .submenu-item.active a, .submenu-item a.active {
+            background-color: #3182CE; /* Tech Blue: Bright blue for active submenu */
+            color: #FFFFFF; /* White text for active submenu */
+            font-weight: 600;
+            border-left: 4px solid #63B3ED; /* Left border indicator */
+            padding-left: 38px; /* Adjust padding for border */
+        }
+        
+        .submenu-item i.menu-icon {
+            margin-right: 10px;
+            width: 18px;
+            text-align: center;
+            color: #718096;
+            transition: color 0.2s ease;
+        }
+        .submenu-item a:hover i.menu-icon {
+            color: #63B3ED;
+        }
+        
+        /* 子菜单活动状态图标样式 */
+        .submenu-item.active a i.menu-icon, .submenu-item a.active i.menu-icon {
+            color: #FFFFFF; /* White icon for active submenu */
+        }
+        
+        .placeholder-text {
+            color: #718096 !important; /* Ensure placeholder text is muted */
+            font-style: italic;
+        }
+        .placeholder-text i.menu-icon {
+            color: #718096 !important;
+        }
+        .main-content {
+            flex-grow: 1;
+            background-color: #EDF2F7;
+            position: relative;
+            height: calc(100vh - 65px); /* 减去header高度 */
+            overflow-y: auto; /* 改为auto以允许滚动 */
+            padding: 24px;
+        }
+        .content-frame {
+            display: none; /* 默认隐藏 iframe */
+            width: 100%;
+            height: 100%;
+            border: none;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .home-content {
+            display: block; /* 默认显示首页内容 */
+        }
+        .module-section {
+            background-color: #fff;
+            border-radius: 8px;
+            padding: 24px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+        /* 产品架构图样式 */
+        .arch-diagram {
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            background: #F7FAFC;
+            border-radius: 8px;
+            padding: 2rem 1rem;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid #E2E8F0;
+            height: 100%;
+        }
+        .arch-node {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            z-index: 2;
+            padding: 0 0.5rem;
+        }
+        .arch-icon {
+            font-size: 2rem;
+            width: 4.5rem;
+            height: 4.5rem;
+            border-radius: 50%;
+            margin-bottom: 0.75rem;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .arch-node-title {
+            font-weight: 600;
+            color: #2D3748;
+            font-size: 0.875rem;
+        }
+        .arch-node-desc {
+            font-size: 0.75rem;
+            color: #718096;
+        }
+        .bg-source { background-color: #3182CE; }
+        .bg-process { background-color: #38A169; }
+        .bg-storage { background-color: #DD6B20; }
+        .bg-serve { background-color: #805AD5; }
+        .arch-arrow {
+            position: absolute;
+            top: calc(50% - 2.25rem);
+            transform: translateY(-50%);
+            font-size: 2rem;
+            color: #CBD5E0;
+            z-index: 1;
+        }
+        
+        .arrow-1 { left: 22%; }
+        .arrow-2 { left: 47%; }
+        .arrow-3 { left: 72%; }
+        /* 产品工具说明样式 */
+        .architecture-description {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            height: 100%;
+        }
+        .desc-section {
+            background-color: #F7FAFC;
+            border: 1px solid #E2E8F0;
+            border-radius: 8px;
+            padding: 1.2rem;
+            transition: all 0.3s ease;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        .desc-section:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            border-color: #3182CE;
+        }
+        .desc-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #2A4365;
+            margin-bottom: 0.75rem;
+            border-bottom: 2px solid #E2E8F0;
+            padding-bottom: 0.5rem;
+        }
+        .desc-content {
+            font-size: 0.8rem;
+            color: #4A5568;
+            line-height: 1.6;
+            flex-grow: 1;
+            text-align: justify;
+        }
+        .content-frame.active {
+            display: block;
+        }
+        .home-content.hidden {
+            display: none;
+        }
+
+        /* 数据开发流程样式 */
+        .development-flow-wrapper {
+            background: linear-gradient(180deg, #fcfdff 0%, #f7f9fc 100%);
+            padding: 1rem;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            color: #334155;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            overflow: visible;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .flow-section {
+            background: rgba(255,255,255,0.8);
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 1rem;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        }
+
+        .flow-title {
+            font-weight: 600;
+            text-align: center;
+            margin-bottom: 0.75rem;
+            color: #374151;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #e2e8f0;
+            font-size: 0.9rem;
+        }
+
+        .scenario-description p {
+            font-size: 0.9rem; /* 调大字号 */
+            color: #4A5568;
+            line-height: 1.6;
+            text-align: justify;
+            margin: 0;
+        }
+
+        .swimlane-diagram {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 1rem;
+            position: relative;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        .systems-header {
+            display: grid;
+            grid-template-columns: 120px 1fr;
+            margin-bottom: 0.5rem;
+            border-bottom: 1px solid #e2e8f0;
+            padding-bottom: 0.5rem;
+        }
+
+        .grid-header {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 0;
+            border-left: 1px solid #e2e8f0;
+            background: #f8fafc;
+        }
+
+        .grid-header-cell {
+            padding: 0.5rem;
+            border-right: 1px solid #e2e8f0;
+            text-align: center;
+            font-size: 0.7rem;
+            font-weight: 500;
+            color: #64748b;
+            min-height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .grid-header-cell:last-child {
+            border-right: none;
+        }
+
+        .header-left {
+            font-weight: 600;
+            color: #1e40af;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+        }
+
+        .header-center {
+            font-weight: 600;
+            color: #1e40af;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+        }
+
+        .swimlanes-wrapper {
+            position: relative;
+            display: block;
+            width: 100%;
+        }
+
+        .swimlanes-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+            position: relative;
+        }
+
+        .swimlane {
+            display: grid;
+            grid-template-columns: 120px 1fr;
+            border-bottom: 1px solid #e2e8f0;
+            min-height: 80px;
+            margin-bottom: 0.5rem;
+        }
+
+        .swimlane:last-child {
+            border-bottom: none;
+        }
+
+        .lane-header {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            color: white;
+            padding: 1rem 0.5rem;
+            border-radius: 20px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+            font-size: 0.75rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            white-space: normal;
+            word-wrap: break-word;
+            font-weight: 600;
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            box-sizing: border-box;
+            line-height: 1.2;
+            position: relative;
+            overflow: hidden;
+            /* 圆柱体效果 */
+            border-top: 2px solid rgba(255,255,255,0.5);
+            border-bottom: 2px solid rgba(0,0,0,0.1);
+        }
+        
+        /* 不同系统的颜色 */
+        .swimlane:nth-child(1) .lane-header {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+        }
+        
+        .swimlane:nth-child(2) .lane-header {
+            background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
+        }
+        
+        .swimlane:nth-child(4) .lane-header {
+            background: linear-gradient(135deg, #eab308 0%, #ca8a04 100%);
+        }
+        
+        .swimlane:nth-child(3) .lane-header {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        }
+
+        .lane-header:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+            background-color: #ffffff;
+        }
+
+
+
+        .lane-content {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 0.2rem;
+            align-items: center;
+            justify-items: center;
+            padding: 0.5rem;
+            background: white;
+            border-left: 1px solid #e2e8f0;
+            position: relative;
+        }
+
+        .grid-cell {
+            min-height: 60px;
+            border-right: 1px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.5rem;
+            position: relative;
+        }
+
+        .grid-cell:last-child {
+            border-right: none;
+        }
+
+        .right-flow-area {
+            width: 100px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+            position: relative;
+            gap: 0.3rem;
+            padding-top: 1.5rem;
+            flex-shrink: 0;
+        }
+
+        .right-flow-step {
+            background: white;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            padding: 0.3rem 0.25rem;
+            font-size: 0.6rem;
+            text-align: center;
+            white-space: normal;
+            word-wrap: break-word;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            width: 100%;
+            min-width: 90px;
+            max-width: 100px;
+            box-sizing: border-box;
+            overflow: hidden;
+            line-height: 1.1;
+            min-height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .right-flow-step:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+            border-color: #3b82f6;
+        }
+
+        .right-flow-arrow {
+            color: #6b7280;
+            font-size: 1rem;
+            font-weight: bold;
+            margin: 0.1rem 0;
+        }
+
+        .connection-lines {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .connection-line {
+            position: absolute;
+            pointer-events: none;
+        }
+
+        .connection-line.vertical {
+            width: 2px;
+            background: #3b82f6;
+            z-index: 5;
+        }
+
+        .connection-line.vertical::after {
+            content: '';
+            position: absolute;
+            bottom: -6px;
+            left: -4px;
+            width: 0;
+            height: 0;
+            border-left: 5px solid transparent;
+            border-right: 5px solid transparent;
+            border-top: 10px solid #3b82f6;
+        }
+
+        .connection-line.vertical[style*="--no-arrow"]::after {
+            display: none;
+        }
+
+        .connection-line.horizontal[style*="--no-arrow"]::after {
+            display: none;
+        }
+
+        .connection-line.horizontal {
+            height: 2px;
+            background: #3b82f6;
+            z-index: 5;
+        }
+
+        .connection-line.horizontal::after {
+            content: '';
+            position: absolute;
+            right: -6px;
+            top: -4px;
+            width: 0;
+            height: 0;
+            border-top: 5px solid transparent;
+            border-bottom: 5px solid transparent;
+            border-left: 10px solid #3b82f6;
+        }
+        
+        .connection-line.horizontal-left {
+            height: 2px;
+            background: #3b82f6;
+            z-index: 5;
+        }
+        
+        .connection-line.horizontal-left::after {
+            content: '';
+            position: absolute;
+            left: -6px;
+            top: -4px;
+            width: 0;
+            height: 0;
+            border-top: 5px solid transparent;
+            border-bottom: 5px solid transparent;
+            border-right: 10px solid #3b82f6;
+        }
+
+        .connection-line.l-shaped {
+            border: 2px solid #3b82f6;
+            background: transparent;
+            border-radius: 0;
+            z-index: 5;
+        }
+
+        .connection-line.l-shaped.down-right {
+            border-top: none;
+            border-left: none;
+        }
+
+        .connection-line.l-shaped.down-right::after {
+            content: '';
+            position: absolute;
+            right: -4px;
+            bottom: -6px;
+            width: 0;
+            height: 0;
+            border-top: 4px solid transparent;
+            border-bottom: 4px solid transparent;
+            border-left: 8px solid #6b7280;
+        }
+
+        .connection-line.l-shaped.up-right {
+            border-bottom: none;
+            border-left: none;
+        }
+
+        .connection-line.l-shaped.up-right::after {
+            content: '';
+            position: absolute;
+            right: -6px;
+            top: -6px;
+            width: 0;
+            height: 0;
+            border-top: 5px solid transparent;
+            border-bottom: 5px solid transparent;
+            border-left: 10px solid #3b82f6;
+        }
+
+        .process-step {
+            background: white;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            padding: 0.4rem 0.2rem 0.4rem 1.8rem;
+            font-size: 0.7rem;
+            text-align: center;
+            white-space: normal;
+            word-wrap: break-word;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            box-sizing: border-box;
+            overflow: hidden;
+            line-height: 1.2;
+            min-height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0.1rem;
+        }
+        
+        .process-step::before {
+            content: attr(data-step);
+            position: absolute;
+            left: 0.3rem;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 1.2rem;
+            height: 1.2rem;
+            background-color: #ef4444;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.65rem;
+            font-weight: 600;
+            box-shadow: 0 2px 4px rgba(239, 68, 68, 0.3);
+        }
+
+        .process-step:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+            border-color: #3b82f6;
+        }
+
+
+
+        .arrow-right, .arrow-left {
+            color: #3b82f6;
+            font-size: 1rem;
+            font-weight: bold;
+            text-align: center;
+            justify-self: center;
+            align-self: center;
+            width: 20px;
+        }
+
+
+
+        .development-steps {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .steps-section {
+            background-color: #F7FAFC;
+            border: 1px solid #E2E8F0;
+            border-radius: 8px;
+            padding: 1.2rem;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .steps-title {
+            font-size: 1.1rem; /* 调大字号 */
+            font-weight: 600;
+            color: #2A4365;
+            margin-bottom: 1rem;
+            border-bottom: 2px solid #E2E8F0;
+            padding-bottom: 0.5rem;
+        }
+
+        .steps-content {
+            display: flex;
+            flex-direction: column;
+            gap: 0.1rem; /* 压缩到最小间距 */
+            flex-grow: 1;
+        }
+
+        /* 步骤项样式优化 */
+        .step-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            padding: 0.5rem;
+            background: rgba(255,255,255,0.8);
+            border-radius: 6px;
+            border: 1px solid #e2e8f0;
+            transition: all 0.3s ease;
+            margin-bottom: 0; /* 移除外边距 */
+        }
+        
+        .step-item:hover {
+            transform: translateX(4px);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border-color: #3b82f6;
+        }
+        
+        /* 步骤编号样式优化 */
+        .step-number {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            color: white;
+            width: 1.5rem;
+            height: 1.5rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+        
+        .step-text {
+            font-size: 0.9rem; /* 调大字号 */
+            color: #4A5568;
+            line-height: 1.5;
+            flex-grow: 1;
+        }
+
+        /* ------------------ New Architecture Diagram Styles ------------------ */
+        .architecture-wrapper {
+            background: linear-gradient(180deg, #fcfdff 0%, #f7f9fc 100%);
+            padding: 1rem;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            color: #334155;
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+            overflow: visible;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .arch-layer {
+            display: flex;
+            align-items: stretch;
+            gap: 0.6rem;
+            flex-shrink: 0;
+            min-height: 75px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .layer-title-box {
+            flex: 0 0 42px;
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); /* 统一蓝色 */
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.8rem;
+            border-radius: 6px;
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+            padding: 0.3rem;
+            box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3);
+        }
+
+        .layer-content {
+            flex-grow: 1;
+            display: flex;
+            gap: 0.4rem;
+            padding: 1rem;
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            border-radius: 6px;
+            align-items: stretch;
+            flex-wrap: nowrap;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            min-height: 64px;
+            overflow: hidden;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        
+        /* 移除所有层级特定的颜色样式 */
+        .arch-layer:nth-child(1) .layer-title-box,
+        .arch-layer:nth-child(3) .layer-title-box,
+        .arch-layer:nth-child(5) .layer-title-box,
+        .arch-layer:nth-child(7) .layer-title-box,
+        .arch-layer:nth-child(9) .layer-title-box {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+        }
+        
+        .arch-layer:nth-child(1) .layer-content,
+        .arch-layer:nth-child(3) .layer-content,
+        .arch-layer:nth-child(5) .layer-content,
+        .arch-layer:nth-child(7) .layer-content,
+        .arch-layer:nth-child(9) .layer-content {
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            border-color: #e2e8f0;
+            border-width: 1px;
+        }
+        
+        .arch-item {
+            background-color: rgba(255,255,255,0.9);
+            padding: 0.4rem 0.3rem;
+            border-radius: 6px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            border: 1px solid rgba(0,0,0,0.1);
+            font-size: 0.75rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            font-weight: 500;
+            min-height: 42px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex: 1;
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .arch-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+            background-color: #ffffff;
+        }
+
+
+
+        /* Data Compute Layer */
+        .data-compute-layer .layer-content {
+            display: grid;
+            grid-template-columns: 3fr 1fr;
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            border-color: #e2e8f0;
+            border-width: 1px;
+            padding: 1rem;
+            gap: 1rem;
+            overflow: hidden;
+            min-height: 160px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .compute-zone {
+            background: rgba(255,255,255,0.8);
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 0.8rem;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            min-height: 140px;
+            overflow: visible;
+        }
+        
+        .real-time-zone {
+            height: 100%;
+        }
+
+        .compute-title {
+            font-weight: 600;
+            text-align: center;
+            margin-bottom: 0.3rem;
+            color: #374151;
+            padding-bottom: 0.2rem;
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 0.75rem;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+            white-space: nowrap;
+        }
+
+        /* Offline Compute Zone */
+        .offline-zone {
+            display: flex;
+            flex-direction: column;
+            gap: 0.3rem;
+            width: 100%;
+        }
+        .offline-row {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            min-height: 32px;
+            width: 100%;
+        }
+        .offline-row-title {
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: #374151;
+            flex: 0 0 40px;
+            text-align: right;
+            padding-right: 0.4rem;
+            border-right: 2px solid #94a3b8;
+            background: linear-gradient(135deg, rgba(148, 163, 184, 0.1) 0%, rgba(148, 163, 184, 0.05) 100%);
+            border-radius: 4px;
+            padding: 0.2rem 0.4rem;
+            min-height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            white-space: nowrap;
+        }
+        .offline-row .item-group {
+            display: flex;
+            flex-wrap: nowrap;
+            gap: 0.2rem;
+            align-items: stretch;
+            overflow: hidden;
+            flex: 1;
+            min-width: 0;
+        }
+        .offline-row .item {
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            padding: 0.2rem 0.4rem;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            border: 1px solid #e2e8f0;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            min-height: 26px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            white-space: nowrap;
+            flex: 1;
+            min-width: 0;
+        }
+        .offline-row .item:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+
+        /* Real-time Zone */
+        .real-time-zone .content {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            justify-content: space-between;
+            gap: 0.3rem;
+            min-height: 80px;
+            padding: 0.1rem;
+        }
+        .real-time-processors {
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            gap: 0.4rem;
+            width: 100%;
+            height: 100%;
+        }
+        .processor-box {
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 0.6rem 0.4rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            min-height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            white-space: nowrap;
+            flex: 1;
+            min-width: 0;
+        }
+        .processor-box:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+            background: linear-gradient(135deg, #ffffff 0%, #f0f9ff 100%);
+            border-color: #3b82f6;
+        }
+
+        .connection-line.l-shaped.up-right::after {
+            content: '';
+            position: absolute;
+            right: -6px;
+            top: -6px;
+            width: 0;
+            height: 0;
+            border-top: 5px solid transparent;
+            border-bottom: 5px solid transparent;
+            border-left: 10px solid #3b82f6;
+        }
+
+        .process-step {
+            background: white;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            padding: 0.4rem 0.2rem 0.4rem 1.8rem;
+            font-size: 0.7rem;
+            text-align: center;
+            white-space: normal;
+            word-wrap: break-word;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            box-sizing: border-box;
+            overflow: hidden;
+            line-height: 1.2;
+            min-height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0.1rem;
+        }
+        
+        /* 流程图和步骤联动的样式 */
+        .highlight-step {
+            background-color: #e6f2ff !important;
+            border-color: #3b82f6 !important;
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3) !important;
+            transform: translateY(-2px);
+            transition: all 0.3s ease;
+        }
+        
+        .dim-step {
+            opacity: 0.5;
+            transition: all 0.3s ease;
+        }
+        
+        .highlight-process-box rect {
+            stroke: #3b82f6 !important;
+            stroke-width: 2px !important;
+            filter: drop-shadow(0 0 3px rgba(59, 130, 246, 0.5));
+            transition: all 0.3s ease;
+        }
+        
+        .dim-process-box rect {
+            opacity: 0.5;
+            transition: all 0.3s ease;
+        }
+        
+        .step-item {
+            transition: all 0.3s ease;
+        }
+        
+        .process-box {
+            transition: all 0.3s ease;
+        }
+        
+        .process-box:hover rect {
+            stroke: #3b82f6;
+            stroke-width: 2px;
+        }
+        
+        .step-item:hover {
+            background-color: #e6f2ff;
+            border-color: #3b82f6;
+        }
+
+        .connection-line.l-shaped.up-right::after {
+            content: '';
+            position: absolute;
+            right: -6px;
+            top: -6px;
+            width: 0;
+            height: 0;
+            border-top: 5px solid transparent;
+            border-bottom: 5px solid transparent;
+            border-left: 10px solid #3b82f6;
+        }
+        
+        /* 工具介绍组件样式 */
+        .step-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .step-tools-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+            padding-left: 2rem;
+        }
+        
+        .tool-chip {
+            display: inline-flex;
+            align-items: center;
+            background: linear-gradient(135deg, #f0f9ff 0%, #e6f2ff 100%);
+            border: 1px solid #bfdbfe;
+            border-radius: 20px;
+            padding: 0.25rem 0.75rem;
+            font-size: 0.75rem;
+            color: #1e40af;
+            gap: 0.4rem;
+            transition: all 0.2s ease;
+            position: relative;
+            cursor: pointer;
+        }
+        
+        .tool-chip:hover {
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .tool-icon {
+            color: #3b82f6;
+            font-size: 0.85rem;
+        }
+        
+        .tool-name {
+            font-weight: 500;
+        }
+        
+        .tool-tooltip {
+            position: absolute;
+            top: calc(100% + 5px);
+            left: 0;
+            background-color: #1e40af;
+            color: white;
+            padding: 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            width: 200px;
+            z-index: 10;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.2s ease;
+            pointer-events: none;
+        }
+        
+        .tool-chip:hover .tool-tooltip {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        /* 多工具时的样式 */
+        .multi-tools .tool-chip {
+            margin-right: 0.3rem;
+            margin-bottom: 0.3rem;
+        }
+        
+        /* 步骤项样式优化 */
+        .step-item {
+            padding: 0.75rem;
+            border-radius: 6px;
+            margin-bottom: 0.75rem;
+            border: 1px solid #e5e7eb;
+            background-color: #ffffff;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .step-item:hover {
+            box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+        }
+        
+        /* 步骤编号样式优化 */
+        .step-number {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 1.75rem;
+            height: 1.75rem;
+            background-color: #3b82f6;
+            color: white;
+            font-weight: bold;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+        
+        .step-text {
+            flex-grow: 1;
+        }
+        
+        /* 架构说明区块中的工具介绍样式 */
+        .arch-tools-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 0.75rem;
+        }
+        
+        .desc-section {
+            position: relative;
+            padding: 1rem;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            margin-bottom: 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .desc-section:hover {
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .desc-title {
+            color: #1e40af;
+            font-weight: 600;
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+        }
+        
+        .desc-title::before {
+            content: '';
+            display: inline-block;
+            width: 4px;
+            height: 1rem;
+            background-color: #3b82f6;
+            margin-right: 0.5rem;
+            border-radius: 2px;
+        }
+        
+        .desc-content {
+            color: #4b5563;
+            font-size: 0.875rem;
+            line-height: 1.5;
+            margin-bottom: 0.5rem;
+        }
+        
+        .architecture-description .tool-chip {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e6f2ff 100%);
+            border: 1px solid #bfdbfe;
+            border-radius: 20px;
+            padding: 0.25rem 0.75rem;
+            font-size: 0.75rem;
+            color: #1e40af;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            transition: all 0.2s ease;
+            position: relative;
+            cursor: pointer;
+        }
+        
+        .architecture-description .tool-chip:hover {
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .architecture-description .tool-icon {
+            color: #3b82f6;
+            font-size: 0.85rem;
+        }
+        
+        .architecture-description .tool-name {
+            font-weight: 500;
+        }
+        
+        .architecture-description .tool-tooltip {
+            position: absolute;
+            top: calc(100% + 5px);
+            left: 0;
+            background-color: #1e40af;
+            color: white;
+            padding: 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            width: 200px;
+            z-index: 10;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.2s ease;
+            pointer-events: none;
+        }
+        
+        .architecture-description .tool-chip:hover .tool-tooltip {
+            opacity: 1;
+            visibility: visible;
+        }
+
+
+
+
+
+    </style>
+</head>
+<body class="bg-gray-100">
+    <div class="app-wrapper">
+        <header class="app-header">
+            <div class="header-content">
+                <div class="header-left">
+                    <h1 class="platform-title">统一数据开发平台</h1>
+                    <div class="project-switcher">
+                        <select id="project-select" class="project-select">
+                            <option>默认项目</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="header-right">
+                    <div class="user-info">
+                        <i class="fas fa-user-circle"></i>
+                        <span>Lidon</span>
+                    </div>
+                </div>
+            </div>
+        </header>
+        <div class="main-container">
+            <aside class="sidebar">
+                <ul class="sidebar-menu">
+                    <li class="sidebar-menu-item"><a href="index.html" class="active"><i class="fas fa-home menu-icon"></i> 首页</a></li>
+                    <li class="sidebar-menu-item">
+                        <button class="collapsed" onclick="toggleSubmenu(this, 'dataDevSubmenu')">
+                            <i class="fas fa-laptop-code menu-icon"></i> 数据开发 <i class="fas fa-chevron-down toggle-icon"></i>
+                        </button>
+                        <ul class="submenu" id="dataDevSubmenu">
+                            <li class="submenu-item"><a href="project_management.html">项目管理</a></li>
+                        </ul>
+                    </li>
+                    <li class="sidebar-menu-item">
+                        <button class="collapsed" onclick="toggleSubmenu(this, 'platformAdminSubmenu')">
+                            <i class="fas fa-cogs menu-icon"></i> 平台管理 <i class="fas fa-chevron-down toggle-icon"></i>
+                        </button>
+                        <ul class="submenu" id="platformAdminSubmenu">
+                            <li class="submenu-item"><a href="menu_management.html">菜单管理</a></li>
+                            <li class="submenu-item"><a href="user_management.html">用户管理</a></li>
+                            <li class="submenu-item"><a href="role_management.html">角色管理</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </aside>
+            <main class="main-content" id="main-content-area">
+                <div id="home-content" class="home-content space-y-6">
+                    <div class="module-section" style="min-height: auto;">
+                        <h2 class="text-xl font-bold text-gray-800 mb-4 pl-4 border-l-4 border-blue-500">统一数据平台数据架构</h2>
+                                                  <div class="grid grid-cols-2 gap-6">
+                                                          <div class="col-span-1">
+                                <div class="architecture-wrapper h-full">
+                                    <!-- Layer: 应用系统 -->
+                                    <div class="arch-layer">
+                                        <div class="layer-title-box">应用系统</div>
+                                        <div class="layer-content">
+                                            <div class="arch-item">驾驶舱系统</div>
+                                            <div class="arch-item">ACRM系统</div>
+                                            <div class="arch-item">数字化审计平台</div>
+                                            <div class="arch-item">其他业务系统</div>
+                                        </div>
+                                    </div>
+                                    <!-- Layer: 数据推送 -->
+                                    <div class="arch-layer">
+                                        <div class="layer-title-box">数据推送</div>
+                                        <div class="layer-content">
+                                            <div class="arch-item">统一数据网关 (API)</div>
+                                            <div class="arch-item">直连DWS</div>
+                                            <div class="arch-item">SFTP推送</div>
+                                            <div class="arch-item">Kafka消息订阅</div>
+                                        </div>
+                                    </div>
+                                    <!-- Layer: 数据计算 -->
+                                    <div class="arch-layer data-compute-layer">
+                                        <div class="layer-title-box">数据计算</div>
+                                        <div class="layer-content">
+                                            <div class="compute-zone offline-zone">
+                                                <div class="compute-title">离线计算 (MRS)</div>
+                                                <div class="offline-row">
+                                                    <div class="offline-row-title">接口层</div>
+                                                    <div class="item-group"><div class="item">经营分析</div><div class="item">审计</div><div class="item">高质量发展</div><div class="item">五篇大文章</div></div>
+                                                </div>
+                                                <div class="offline-row">
+                                                    <div class="offline-row-title">模型层</div>
+                                                    <div class="item-group"><div class="item">保单</div><div class="item">合同</div><div class="item">投保人</div><div class="item">被保人</div></div>
+                                                </div>
+                                                <div class="offline-row">
+                                                    <div class="offline-row-title">贴源层</div>
+                                                    <div class="item-group"><div class="item">财险</div><div class="item">寿险</div><div class="item">健康险</div><div class="item">养老</div></div>
+                                                </div>
+                                            </div>
+                                            <div class="compute-zone real-time-zone">
+                                                <div class="compute-title">实时计算 (Flink)</div>
+                                                <div class="content">
+                                                    <div class="real-time-processors"><div class="processor-box">指标逻辑计算</div><div class="processor-box">维表</div></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- Layer: 数据同步 -->
+                                    <div class="arch-layer">
+                                        <div class="layer-title-box">数据同步</div>
+                                        <div class="layer-content">
+                                            <div class="arch-item">Spark</div>
+                                            <div class="arch-item">Flume</div>
+                                            <div class="arch-item">DSG</div>
+                                            <div class="arch-item">Kafka</div>
+                                        </div>
+                                    </div>
+                                    <!-- Layer: 数据源 -->
+                                    <div class="arch-layer">
+                                        <div class="layer-title-box">数据源</div>
+                                        <div class="layer-content">
+                                            <div class="arch-item">财险系统</div>
+                                            <div class="arch-item">寿险系统</div>
+                                            <div class="arch-item">健康险系统</div>
+                                            <div class="arch-item">投资业务系统</div>
+                                            <div class="arch-item">外部数据源</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-span-1">
+                                <div class="architecture-description h-full">
+                                    <div class="desc-section">
+                                        <h3 class="desc-title">数据同步</h3>
+                                        <p class="desc-content">数据平台处理多种业务数据，通过JDBC连接源端数据库获取量数据，通过Spark写入统一数据平台数据湖。对于不支持JDBC连接的情况，采用Kafka将数据推送到数据湖。</p>
+                                        <div class="arch-tools-container">
+                                            <div class="tool-chip">
+                                                <span class="tool-icon"><i class="fas fa-database"></i></span>
+                                                <span class="tool-name">DX (数据集成)</span>
+                                                <div class="tool-tooltip">提供强大的数据集成能力，支持多种数据源的实时与离线同步。</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="desc-section">
+                                        <h3 class="desc-title">数据计算</h3>
+                                        <p class="desc-content">贴源层通过自研抽取工具同步上游业务系统数据到统一数据平台，保证数据同步原貌。模型层结合维度建模理论，构建各层次数据模型。接口层根据不同应用场景，产出适用于不同业务的数据服务。</p>
+                                        <div class="arch-tools-container">
+                                            <div class="tool-chip">
+                                                <span class="tool-icon"><i class="fas fa-server"></i></span>
+                                                <span class="tool-name">MRS (数据湖)</span>
+                                                <div class="tool-tooltip">构建统一的数据湖，集中存储和管理海量、多样的原始数据。</div>
+                                            </div>
+                                            <div class="tool-chip">
+                                                <span class="tool-icon"><i class="fas fa-clock"></i></span>
+                                                <span class="tool-name">WS (白鲸调度)</span>
+                                                <div class="tool-tooltip">企业级的工作流调度系统，保障数据任务的稳定、高效执行。</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="desc-section">
+                                        <h3 class="desc-title">数据推送</h3>
+                                        <p class="desc-content">支持通过四种模式完成与下游系统的对接：统一数据网关API进行数据查询；直连DWS仓库进行数据查询；SFTP数据下发；Kafka消息订阅实时数据。</p>
+                                        <div class="arch-tools-container">
+                                            <div class="tool-chip">
+                                                <span class="tool-icon"><i class="fas fa-chart-bar"></i></span>
+                                                <span class="tool-name">DWS (分析型数据仓库)</span>
+                                                <div class="tool-tooltip">高性能的分析型数据仓库，支持复杂的Ad-hoc查询和多维分析。</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="module-section">
+                        <h2 class="text-xl font-bold text-gray-800 mb-4 pl-4 border-l-4 border-blue-500">数据开发流程</h2>
+                        <div class="flex gap-6">
+                            <div class="w-3/5">
+                                <div class="development-flow-wrapper">
+                                    <!-- 融合业务场景说明和流程图 -->
+                                    <div class="flow-section">
+                                        <div class="scenario-description mb-4">
+                                            <p class="mb-4 pb-3 border-b border-gray-200">用户小李，准备做【精算系统项目】的报表提块做信创迁移，需要对源系统的数据迁移到统一数据平台MRS，然后进行数据计算加工，最终导入到DWS，供业务系统直连查询。</p>
+                                        </div>
+                                        <div class="swimlane-diagram">
+                                            <div id="tooltip" class="tooltip" style="position: absolute; display: none; background-color: rgba(0,0,0,0.8); color: white; padding: 5px 10px; border-radius: 4px; font-size: 12px; pointer-events: none; z-index: 100;"></div>
+                                            <svg id="workflow-diagram" width="100%" height="450" viewBox="0 0 800 450" xmlns="http://www.w3.org/2000/svg"> {/* 增大SVG高度 */}
+                                                <defs>
+                                                    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                                                        <polygon points="0 0, 10 3.5, 0 7" fill="#3b82f6" />
+                                                    </marker>
+                                                </defs>
+                                                <!-- 标题和分隔线 -->
+                                                <g id="headers">
+                                                    <text x="100" y="20" text-anchor="middle" font-size="16" font-weight="bold">涉及系统</text>
+                                                    <text x="475" y="20" text-anchor="middle" font-size="16" font-weight="bold">开发过程 (以MRS-DWS为示例)</text>
+                                                    
+                                                    <!-- 虚线分隔 -->
+                                                    <line x1="40" y1="30" x2="160" y2="30" stroke="#666" stroke-width="1" stroke-dasharray="5,5" />
+                                                    <line x1="190" y1="30" x2="760" y2="30" stroke="#666" stroke-width="1" stroke-dasharray="5,5" />
+                                                </g>
+                                                
+                                                <!-- 系统圆柱体 -->
+                                                <g id="systems">
+                                                    <!-- 数据开发平台 -->
+                                                    <g id="data-platform" class="system-cylinder" data-name="数据开发平台">
+                                                        <rect x="40" y="60" width="120" height="60" rx="6" ry="6" fill="#3b82f6" />
+                                                        <text x="100" y="95" text-anchor="middle" fill="white" font-size="14" font-weight="bold">数据开发平台</text>
+                                                    </g>
+                                                    
+                                                    <!-- MRS集群 -->
+                                                    <g id="mrs" class="system-cylinder" data-name="MRS集群">
+                                                        <rect x="40" y="125" width="120" height="60" rx="6" ry="6" fill="#3b82f6" />
+                                                        <text x="100" y="160" text-anchor="middle" fill="white" font-size="14" font-weight="bold">MRS集群</text>
+                                                    </g>
+                                                    
+                                                    <!-- WS白鲸调度 -->
+                                                    <g id="ws" class="system-cylinder" data-name="WS白鲸调度">
+                                                        <rect x="40" y="190" width="120" height="60" rx="6" ry="6" fill="#3b82f6" />
+                                                        <text x="100" y="225" text-anchor="middle" fill="white" font-size="14" font-weight="bold">WS白鲸调度</text>
+                                                    </g>
+                                                    
+                                                    <!-- DWS集群 -->
+                                                    <g id="dws" class="system-cylinder" data-name="DWS集群">
+                                                        <rect x="40" y="255" width="120" height="60" rx="6" ry="6" fill="#3b82f6" />
+                                                        <text x="100" y="290" text-anchor="middle" fill="white" font-size="14" font-weight="bold">DWS集群</text>
+                                                    </g>
+                                                </g>
+                                                
+                                                <!-- 流程步骤框 -->
+                                                <g id="process-steps">
+                                                    <!-- 第1步 -->
+                                                    <g id="step1" class="process-box" data-step="1" data-desc="查看入湖台账报表中，是否需要入湖的表已经有对应的任务生成">
+                                                        <rect x="190" y="70" width="120" height="40" rx="4" ry="4" fill="white" stroke="#d1d5db" stroke-width="1" />
+                                                        <text x="250" y="95" text-anchor="middle" font-size="12">查看入湖台账</text>
+                                                    </g>
+                                                    
+                                                    <!-- 第2步 -->
+                                                    <g id="step2" class="process-box" data-step="2" data-desc="如果没有的话，需要创建入湖任务，拿到job1d1，以及对应的表名1">
+                                                        <rect x="340" y="70" width="120" height="40" rx="4" ry="4" fill="white" stroke="#d1d5db" stroke-width="1" />
+                                                        <text x="400" y="95" text-anchor="middle" font-size="12">入湖任务配置</text>
+                                                    </g>
+                                                    
+                                                    <!-- 第3步(入湖数据核验) -->
+                                                    <g id="step3" class="process-box" data-step="3" data-desc="在hue上查看查询入湖到MRS里对应的表">
+                                                        <rect x="340" y="135" width="120" height="40" rx="4" ry="4" fill="white" stroke="#d1d5db" stroke-width="1" />
+                                                        <text x="400" y="155" text-anchor="middle" font-size="12">入湖数据核验</text>
+                                                        <text x="400" y="170" text-anchor="middle" font-size="12">(HIVE)</text>
+                                                    </g>
+                                                    
+                                                    <!-- 查看组件包台账 -->
+                                                    <g id="step3-yarn" class="process-box" data-step="3" data-desc="在hue上查看查询入湖到MRS里对应的表">
+                                                        <rect x="190" y="135" width="120" height="40" rx="4" ry="4" fill="white" stroke="#d1d5db" stroke-width="1" />
+                                                        <text x="250" y="155" text-anchor="middle" font-size="12">查看组件包台账</text>
+                                                        <text x="250" y="170" text-anchor="middle" font-size="12">(Yarn)</text>
+                                                    </g>
+                                                    
+                                                    <!-- 第4步 -->
+                                                    <g id="step4" class="process-box" data-step="4" data-desc="在MRS上进行作业开发，完成数据ETL工作">
+                                                        <rect x="490" y="135" width="120" height="40" rx="4" ry="4" fill="white" stroke="#d1d5db" stroke-width="1" />
+                                                        <text x="550" y="155" text-anchor="middle" font-size="12">离线开发</text>
+                                                        <text x="550" y="170" text-anchor="middle" font-size="12">(HIVE)</text>
+                                                    </g>
+                                                    
+                                                    <!-- 第5步 -->
+                                                    <g id="step5" class="process-box" data-step="5" data-desc="在DWS上进行作业开发，完成数据ETL工作">
+                                                        <rect x="490" y="265" width="120" height="40" rx="4" ry="4" fill="white" stroke="#d1d5db" stroke-width="1" />
+                                                        <text x="550" y="285" text-anchor="middle" font-size="12">离线开发</text>
+                                                        <text x="550" y="300" text-anchor="middle" font-size="12">(DWS)</text>
+                                                    </g>
+                                                    
+                                                    <!-- 第6步 -->
+                                                    <g id="step6" class="process-box" data-step="6" data-desc="在数据交换功能中进行出湖任务备配置job1d2，以及对应的表名2">
+                                                        <rect x="640" y="70" width="120" height="40" rx="4" ry="4" fill="white" stroke="#d1d5db" stroke-width="1" />
+                                                        <text x="700" y="95" text-anchor="middle" font-size="12">出湖任务配置</text>
+                                                    </g>
+                                                    
+                                                    <!-- 第7步 -->
+                                                    <g id="step7" class="process-box" data-step="7" data-desc="在代码管理平台gitee上完成各版及流水线配置">
+                                                        <rect x="640" y="135" width="120" height="40" rx="4" ry="4" fill="white" stroke="#d1d5db" stroke-width="1" />
+                                                        <text x="700" y="155" text-anchor="middle" font-size="12">代码发布</text>
+                                                        <text x="700" y="170" text-anchor="middle" font-size="12">(Gitee)</text>
+                                                    </g>
+                                                    
+                                                    <!-- 第8步 -->
+                                                    <g id="step8" class="process-box" data-step="8" data-desc="在WS调度系统上基于job进行调度任务的配置，起调度">
+                                                        <rect x="640" y="200" width="120" height="40" rx="4" ry="4" fill="white" stroke="#d1d5db" stroke-width="1" />
+                                                        <text x="700" y="225" text-anchor="middle" font-size="12">配置调度任务</text>
+                                                    </g>
+                                                </g>
+                                                
+                                                <!-- 连接箭头 -->
+                                                <g id="connections">
+                                                    <!-- 箭头12 -->
+                                                    <line x1="310" y1="90" x2="330" y2="90" stroke="#3b82f6" stroke-width="2" />
+                                                    <polygon points="330,86 340,90 330,94" fill="#3b82f6" />
+                                                    
+                                                    <!-- 箭头23 -->
+                                                    <path d="M 400 110 L 400 125" fill="none" stroke="#3b82f6" stroke-width="2" />
+                                                    <polygon points="396,125 400,135 404,125" fill="#3b82f6" />
+                                                    
+                                                    <!-- 箭头3查看组件包台账 -->
+                                                    <line x1="340" y1="155" x2="320" y2="155" stroke="#3b82f6" stroke-width="2" />
+                                                    <polygon points="320,151 310,155 320,159" fill="#3b82f6" />
+                                                    
+                                                    <!-- 箭头34 -->
+                                                    <line x1="460" y1="155" x2="480" y2="155" stroke="#3b82f6" stroke-width="2" />
+                                                    <polygon points="480,151 490,155 480,159" fill="#3b82f6" />
+                                                    
+                                                    <!-- 箭头45 (HIVE到DWS) -->
+                                                    <path d="M 550 175 L 550 255" fill="none" stroke="#3b82f6" stroke-width="2" />
+                                                    <polygon points="546,255 550,265 554,255" fill="#3b82f6" />
+                                                    
+                                                    <!-- 箭头56 (DWS到出湖) - 使用折线连接，避免覆盖步骤区块 -->
+                                                    <path d="M 610 285 L 620 285 L 620 90 L 635 90" fill="none" stroke="#3b82f6" stroke-width="2" />
+                                                    <polygon points="635,86 640,90 635,94" fill="#3b82f6" />
+                                                    
+                                                    <!-- 箭头67 (出湖到代码发布) -->
+                                                    <path d="M 700 110 L 700 125" fill="none" stroke="#3b82f6" stroke-width="2" />
+                                                    <polygon points="696,125 700,135 704,125" fill="#3b82f6" />
+                                                    
+                                                    <!-- 箭头78 (代码发布到配置调度) -->
+                                                    <path d="M 700 175 L 700 190" fill="none" stroke="#3b82f6" stroke-width="2" />
+                                                    <polygon points="696,190 700,200 704,190" fill="#3b82f6" />
+                                                </g>
+                                            </svg>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="w-2/5">
+                                <div class="development-steps">
+                                    <div class="steps-section">
+                                        <h3 class="steps-title">小李整个工作流程梳理</h3>
+                                        <div class="steps-content">
+                                            <div class="step-item">
+                                                <span class="step-number">1</span>
+                                                <span class="step-text">查看入湖台账报表中，是否需要入湖的表已经有对应的任务生成</span>
+                                            </div>
+                                            <div class="step-item">
+                                                <span class="step-number">2</span>
+                                                <span class="step-text">如果没有的话，需要创建入湖任务，拿到job1d1，以及对应的表名1</span>
+                                            </div>
+                                            <div class="step-item">
+                                                <span class="step-number">3</span>
+                                                <span class="step-text">在hue上查看查询入湖到MRS里对应的表</span>
+                                            </div>
+                                            <div class="step-item">
+                                                <span class="step-number">4</span>
+                                                <span class="step-text">在MRS上进行作业开发，完成数据ETL工作</span>
+                                            </div>
+                                            <div class="step-item">
+                                                <span class="step-number">5</span>
+                                                <span class="step-text">在DWS上进行作业开发，完成数据ETL工作</span>
+                                            </div>
+                                            <div class="step-item">
+                                                <span class="step-number">6</span>
+                                                <span class="step-text">在数据交换功能中进行出湖任务备配置job1d2，以及对应的表名2</span>
+                                            </div>
+                                            <div class="step-item">
+                                                <span class="step-number">7</span>
+                                                <span class="step-text">在代码管理平台gitee上完成各版及流水线配置</span>
+                                            </div>
+                                            <div class="step-item">
+                                                <span class="step-number">8</span>
+                                                <span class="step-text">在WS调度系统上基于job进行调度任务的配置，起调度</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <iframe id="content-frame" class="content-frame" name="content-frame"></iframe>
+            </main>
+        </div>
+    </div>
+
+    <script>
+        function toggleSubmenu(button, submenuId) {
+            const submenu = document.getElementById(submenuId);
+            const isCollapsed = button.classList.toggle('collapsed');
+            button.querySelector('.toggle-icon').style.transform = isCollapsed ? 'rotate(-90deg)' : 'rotate(0deg)';
+            submenu.style.maxHeight = isCollapsed ? '0px' : submenu.scrollHeight + "px";
+            submenu.classList.toggle('open', !isCollapsed);
+        }
+
+        function drawConnectionLines() {
+            const swimlanesWrapper = document.querySelector('.swimlanes-wrapper');
+            if (!swimlanesWrapper) return;
+
+            const connectionLines = document.querySelector('.connection-lines');
+            
+            // 清除现有连接线
+            connectionLines.innerHTML = '';
+            
+            // 创建垂直连接线
+            function createVerticalLine(fromStep, toStep) {
+                const fromEl = document.querySelector(`[data-step="${fromStep}"]`);
+                const toEl = document.querySelector(`[data-step="${toStep}"]`);
+                
+                if (!fromEl || !toEl) return;
+                
+                const fromRect = fromEl.getBoundingClientRect();
+                const toRect = toEl.getBoundingClientRect();
+                const containerRect = swimlanesWrapper.getBoundingClientRect();
+                
+                const line = document.createElement('div');
+                line.className = 'connection-line vertical';
+                
+                const fromX = fromRect.left + fromRect.width / 2 - containerRect.left;
+                const fromY = fromRect.bottom - containerRect.top + 5;
+                const toY = toRect.top - containerRect.top - 5;
+                
+                line.style.left = fromX + 'px';
+                line.style.top = fromY + 'px';
+                line.style.height = (toY - fromY) + 'px';
+                
+                connectionLines.appendChild(line);
+            }
+            
+            // 创建L形连接线
+            function createLShapedLine(fromStep, toStep, direction = 'down-right') {
+                const fromEl = document.querySelector(`[data-step="${fromStep}"]`);
+                const toEl = document.querySelector(`[data-step="${toStep}"]`);
+                
+                if (!fromEl || !toEl) return;
+                
+                const fromRect = fromEl.getBoundingClientRect();
+                const toRect = toEl.getBoundingClientRect();
+                const containerRect = swimlanesWrapper.getBoundingClientRect();
+                
+                const line = document.createElement('div');
+                line.className = `connection-line l-shaped ${direction}`;
+                
+                if (direction === 'down-right') {
+                    const fromX = fromRect.right - containerRect.left + 5;
+                    const fromY = fromRect.top + fromRect.height / 2 - containerRect.top;
+                    const toX = toRect.left - containerRect.left - 5;
+                    const toY = toRect.top + toRect.height / 2 - containerRect.top;
+                    
+                    line.style.left = fromX + 'px';
+                    line.style.top = fromY + 'px';
+                    line.style.width = (toX - fromX) + 'px';
+                    line.style.height = (toY - fromY) + 'px';
+                } else if (direction === 'up-right') {
+                    const fromX = fromRect.right - containerRect.left + 5;
+                    const fromY = toRect.top + toRect.height / 2 - containerRect.top;
+                    const toX = toRect.left - containerRect.left - 5;
+                    const toY = fromRect.top + fromRect.height / 2 - containerRect.top;
+                    
+                    line.style.left = fromX + 'px';
+                    line.style.top = fromY + 'px';
+                    line.style.width = (toX - fromX) + 'px';
+                    line.style.height = (toY - fromY) + 'px';
+                }
+                
+                connectionLines.appendChild(line);
+            }
+            
+            // 创建连接线
+            createVerticalLine(2, 3);
+            createVerticalLine(4, 7);
+            createLShapedLine(7, 5, 'up-right');
+            createVerticalLine(5, 6);
+            createVerticalLine(6, 8);
+        }
+
+        // 初始化SVG流程图交互
+        document.addEventListener("DOMContentLoaded", function() {
+            // 初始化流程图提示框
+            initFlowDiagramTooltips();
+            
+            // 其他现有初始化代码
+        });
+        
+        // 初始化流程图提示框
+        function initFlowDiagramTooltips() {
+            const tooltip = document.getElementById("tooltip");
+            if (!tooltip) return;
+            
+            const procesBoxes = document.querySelectorAll(".process-box");
+            const systemCylinders = document.querySelectorAll(".system-cylinder");
+            
+            // 流程步骤提示
+            procesBoxes.forEach(box => {
+                box.addEventListener("mouseover", function(e) {
+                    const desc = this.getAttribute("data-desc");
+                    if (desc) {
+                        showTooltip(desc, e);
+                    }
+                });
+                
+                box.addEventListener("mousemove", function(e) {
+                    moveTooltip(e);
+                });
+                
+                box.addEventListener("mouseout", function() {
+                    hideTooltip();
+                });
+            });
+            
+            // 系统提示
+            systemCylinders.forEach(system => {
+                system.addEventListener("mouseover", function(e) {
+                    const name = this.getAttribute("data-name");
+                    if (name) {
+                        showTooltip(name, e);
+                    }
+                });
+                
+                system.addEventListener("mousemove", function(e) {
+                    moveTooltip(e);
+                });
+                
+                system.addEventListener("mouseout", function() {
+                    hideTooltip();
+                });
+            });
+        }
+        
+        // 显示提示框
+        function showTooltip(text, event) {
+            const tooltip = document.getElementById("tooltip");
+            if (!tooltip) return;
+            
+            tooltip.textContent = text;
+            tooltip.style.display = "block";
+            moveTooltip(event);
+        }
+        
+        // 移动提示框
+        function moveTooltip(event) {
+            const tooltip = document.getElementById("tooltip");
+            if (!tooltip) return;
+            
+            const x = event.clientX + 15;
+            const y = event.clientY + 15;
+            tooltip.style.left = x + "px";
+            tooltip.style.top = y + "px";
+        }
+        
+        // 隐藏提示框
+        function hideTooltip() {
+            const tooltip = document.getElementById("tooltip");
+            if (!tooltip) return;
+            
+            tooltip.style.display = "none";
+        }
+        
+        // 流程图和右侧步骤说明的联动功能
+        document.addEventListener("DOMContentLoaded", function() {
+            initStepsLinkage();
+        });
+        
+        function initStepsLinkage() {
+            // 获取流程图中的步骤元素
+            const processBoxes = document.querySelectorAll(".process-box");
+            // 获取右侧步骤说明元素
+            const stepItems = document.querySelectorAll(".step-item");
+            
+            if (!processBoxes.length || !stepItems.length) return;
+            
+            // 为流程图中的每个步骤添加鼠标事件
+            processBoxes.forEach(box => {
+                const step = box.getAttribute("data-step");
+                if (!step) return;
+                
+                box.addEventListener("mouseenter", function() {
+                    // 高亮对应的右侧步骤说明
+                    highlightStepItem(step);
+                });
+                
+                box.addEventListener("mouseleave", function() {
+                    // 恢复右侧步骤说明的正常状态
+                    resetStepItems();
+                });
+            });
+            
+            // 为右侧步骤说明添加鼠标事件
+            stepItems.forEach(item => {
+                const stepNumber = item.querySelector(".step-number");
+                if (!stepNumber) return;
+                
+                const step = stepNumber.textContent;
+                
+                item.addEventListener("mouseenter", function() {
+                    // 高亮流程图中对应的步骤
+                    highlightProcessBox(step);
+                    // 同时高亮自身
+                    item.classList.add("highlight-step");
+                });
+                
+                item.addEventListener("mouseleave", function() {
+                    // 恢复流程图中步骤的正常状态
+                    resetProcessBoxes();
+                    // 恢复自身的正常状态
+                    item.classList.remove("highlight-step");
+                });
+            });
+        }
+        
+        // 高亮右侧步骤说明
+        function highlightStepItem(step) {
+            const stepItems = document.querySelectorAll(".step-item");
+            
+            stepItems.forEach(item => {
+                const stepNumber = item.querySelector(".step-number");
+                if (!stepNumber) return;
+                
+                if (stepNumber.textContent === step) {
+                    item.classList.add("highlight-step");
+                } else {
+                    item.classList.add("dim-step");
+                }
+            });
+        }
+        
+        // 高亮流程图中的步骤
+        function highlightProcessBox(step) {
+            const processBoxes = document.querySelectorAll(".process-box");
+            
+            processBoxes.forEach(box => {
+                const boxStep = box.getAttribute("data-step");
+                if (!boxStep) return;
+                
+                if (boxStep === step) {
+                    box.classList.add("highlight-process-box");
+                } else {
+                    box.classList.add("dim-process-box");
+                }
+            });
+        }
+        
+        // 重置右侧步骤说明的状态
+        function resetStepItems() {
+            const stepItems = document.querySelectorAll(".step-item");
+            
+            stepItems.forEach(item => {
+                item.classList.remove("highlight-step");
+                item.classList.remove("dim-step");
+            });
+        }
+        
+        // 重置流程图中步骤的状态
+        function resetProcessBoxes() {
+            const processBoxes = document.querySelectorAll(".process-box");
+            
+            processBoxes.forEach(box => {
+                box.classList.remove("highlight-process-box");
+                box.classList.remove("dim-process-box");
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const menuLinks = document.querySelectorAll('.sidebar-menu a');
+            const contentFrame = document.getElementById('content-frame');
+            const homeContent = document.getElementById('home-content');
+            const mainContentArea = document.getElementById('main-content-area');
+            const homeLink = document.querySelector('a[href="index.html"]');
+
+            function setActiveLink(activeLink) {
+                menuLinks.forEach(link => link.classList.remove('active'));
+                if (activeLink) {
+                    activeLink.classList.add('active');
+                    
+                    // Also manage parent button state if inside a submenu
+                    const parentSubmenu = activeLink.closest('.submenu');
+                if (parentSubmenu) {
+                    const parentButton = parentSubmenu.previousElementSibling;
+                        parentButton.classList.add('active-parent'); // You might need to style this class
+                    }
+                }
+            }
+
+            function showHomePage() {
+                homeContent.classList.remove('hidden');
+                contentFrame.classList.remove('active');
+                contentFrame.src = 'about:blank';
+                mainContentArea.style.overflowY = 'auto';
+                setActiveLink(homeLink);
+            }
+
+            function loadContent(url, targetLink) {
+                if (url && url !== '#' && url.toLowerCase() !== 'index.html') {
+                    homeContent.classList.add('hidden');
+                    contentFrame.src = url;
+                    contentFrame.classList.add('active');
+                    mainContentArea.style.overflowY = 'hidden';
+                    setActiveLink(targetLink);
+            } else {
+                    showHomePage();
+                }
+            }
+            
+            menuLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const url = this.getAttribute('href');
+                    loadContent(url, this);
+                });
+            });
+
+            // Set initial state
+            showHomePage();
+
+            // Auto-expand menu containing the active link on page load (if not home)
+            const activeLink = document.querySelector('.sidebar-menu a.active');
+            if (activeLink && activeLink !== homeLink) {
+                const parentSubmenu = activeLink.closest('.submenu');
+                if (parentSubmenu) {
+                    const parentButton = parentSubmenu.previousElementSibling;
+                    toggleSubmenu(parentButton, parentSubmenu.id);
+                }
+            } else {
+                // Default expand "平台管理"
+                const platformAdminButton = document.querySelector('button[onclick*="platformAdminSubmenu"]');
+                if (platformAdminButton) {
+                   toggleSubmenu(platformAdminButton, 'platformAdminSubmenu');
+                   platformAdminButton.classList.remove('collapsed');
+                }
+            }
+
+            // 绘制连接线
+            drawConnectionLines();
+            
+            // 窗口大小改变时重新绘制连接线
+            window.addEventListener('resize', drawConnectionLines);
+        });
+    </script>
+</body>
+</html> 

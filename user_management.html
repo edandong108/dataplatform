@@ -1,0 +1,954 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>用户管理 - 数据平台权限管理</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: #f0f2f5;
+            color: #333;
+        }
+        .app-container {
+            max-width: none;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .content-area {
+            padding: 0;
+            flex-grow: 1;
+        }
+        .table-container {
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 12px 16px;
+            text-align: left;
+            border-bottom: 1px solid #e5e5e5;
+            font-size: 0.9375rem;
+        }
+        th {
+            background-color: #f7f7f7;
+            font-weight: 500;
+        }
+        tr:last-child td {
+            border-bottom: none;
+        }
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 12px; /* Pill shape */
+            font-size: 0.75rem; /* 12px */
+            font-weight: 500;
+            text-transform: uppercase;
+        }
+        .status-active {
+            background-color: #d4edda; /* Light green */
+            color: #155724; /* Dark green */
+        }
+        .status-inactive {
+            background-color: #f8d7da; /* Light red */
+            color: #721c24; /* Dark red */
+        }
+        .action-buttons button {
+            color: #007aff;
+            background: none;
+            border: none;
+            padding: 6px 8px;
+            margin-right: 8px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            border-radius: 6px;
+            transition: background-color 0.2s ease;
+        }
+        .action-buttons button:hover {
+            background-color: #e7f3ff;
+        }
+        .action-buttons .delete-button {
+            color: #ff3b30;
+        }
+        .action-buttons .delete-button:hover {
+            background-color: #ffebee;
+        }
+        .add-button {
+            background-color: #007aff;
+            color: white;
+            padding: 10px 18px;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.9375rem;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            margin-bottom: 20px;
+            display: inline-flex;
+            align-items: center;
+        }
+        .add-button i {
+            margin-right: 8px;
+        }
+        .add-button:hover {
+            background-color: #005bb5;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 10% auto;
+            padding: 24px;
+            border: 1px solid #d1d1d6;
+            width: 90%;
+            max-width: 500px;
+            border-radius: 14px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .modal-header h2 {
+            font-size: 1.125rem;
+            font-weight: 600;
+        }
+        .close-button {
+            color: #aaa;
+            font-size: 24px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .form-group {
+            margin-bottom: 16px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 0.875rem;
+            color: #333;
+            font-weight: 500;
+        }
+        .form-group input[type="text"], .form-group input[type="email"], .form-group input[type="password"], .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #d1d1d6;
+            border-radius: 8px;
+            font-size: 0.9375rem;
+            box-sizing: border-box;
+        }
+        .form-actions {
+            text-align: right;
+            margin-top: 24px;
+        }
+        .form-actions button {
+            padding: 10px 18px;
+            border-radius: 8px;
+            font-size: 0.9375rem;
+            cursor: pointer;
+            border: none;
+            margin-left: 10px;
+        }
+        .form-actions .save-button {
+            background-color: #007aff;
+            color: white;
+        }
+        .form-actions .cancel-button {
+            background-color: #e5e5e5;
+            color: #333;
+        }
+        /* Tech Blue Theme Styles for user_management.html */
+        #mainContentPortal .content-area {
+            padding: 20px;
+            flex-grow: 1;
+        }
+
+        #mainContentPortal .table-container {
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+            border: 1px solid #CBD5E0;
+        }
+
+        #mainContentPortal table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        #mainContentPortal th, #mainContentPortal td {
+            padding: 12px 16px;
+            text-align: left;
+            border-bottom: 1px solid #E2E8F0;
+            font-size: 0.9375rem;
+        }
+
+        #mainContentPortal th {
+            background-color: #F7FAFC;
+            font-weight: 600;
+            color: #2D3748;
+            text-transform: uppercase;
+            font-size: 0.875rem;
+        }
+
+        #mainContentPortal td {
+            color: #4A5568;
+        }
+         #mainContentPortal td .status-active {
+            color: #38A169; /* Tech Blue: Green for active */
+            font-weight: 500;
+        }
+        #mainContentPortal td .status-inactive {
+            color: #E53E3E; /* Tech Blue: Red for inactive */
+            font-weight: 500;
+        }
+
+        #mainContentPortal tr:last-child td {
+            border-bottom: none;
+        }
+
+        #mainContentPortal .action-buttons button {
+            color: #3182CE;
+            background: none;
+            border: 1px solid transparent;
+            padding: 6px 10px;
+            margin-right: 8px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+        }
+        #mainContentPortal .action-buttons button i {
+            margin-right: 4px;
+        }
+
+        #mainContentPortal .action-buttons button:hover {
+            background-color: #EBF8FF;
+            border-color: #90CDF4;
+            color: #2B6CB0;
+        }
+
+        #mainContentPortal .action-buttons .delete-button {
+            color: #E53E3E;
+        }
+        #mainContentPortal .action-buttons .delete-button:hover {
+            background-color: #FFF5F5;
+            border-color: #FEB2B2;
+            color: #C53030;
+        }
+        #mainContentPortal .action-buttons .delete-button[disabled] {
+            color: #A0AEC0; 
+            cursor: not-allowed;
+            background-color: transparent;
+            border-color: transparent;
+        }
+        #mainContentPortal .action-buttons .delete-button[disabled]:hover {
+             color: #A0AEC0; 
+             background-color: transparent;
+        }
+
+        #mainContentPortal .add-button {
+            background-color: #3182CE;
+            color: white;
+            padding: 10px 18px;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.9375rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            margin-bottom: 20px;
+            display: inline-flex;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        #mainContentPortal .add-button i {
+            margin-right: 8px;
+        }
+        #mainContentPortal .add-button:hover {
+            background-color: #2B6CB0;
+        }
+
+        /* Modal styles using a specific class */
+        .user-modal-styling.modal {
+            display: none;
+            position: fixed;
+            z-index: 1050;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .user-modal-styling .modal-content {
+            background-color: #ffffff;
+            margin: 8% auto;
+            padding: 24px;
+            border: 1px solid #E2E8F0;
+            width: 90%;
+            max-width: 500px;
+            border-radius: 8px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1), 0 5px 10px rgba(0,0,0,0.04);
+        }
+
+        .user-modal-styling .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #E2E8F0;
+        }
+
+        .user-modal-styling .modal-header h2 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #2A4365;
+        }
+
+        .user-modal-styling .close-button {
+            color: #718096;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            background: none;
+            border: none;
+            padding: 0 4px;
+            line-height: 1;
+        }
+        .user-modal-styling .close-button:hover {
+            color: #2D3748;
+        }
+
+        .user-modal-styling .form-group {
+            margin-bottom: 16px;
+        }
+
+        .user-modal-styling .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 0.875rem;
+            color: #4A5568;
+            font-weight: 500;
+        }
+
+        .user-modal-styling .form-group input[type="text"], 
+        .user-modal-styling .form-group input[type="email"], 
+        .user-modal-styling .form-group input[type="password"], 
+        .user-modal-styling .form-group select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #CBD5E0;
+            border-radius: 6px;
+            font-size: 0.9375rem;
+            box-sizing: border-box;
+            background-color: #FFFFFF;
+            color: #2D3748;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+        .user-modal-styling .form-group input[type="text"]:focus, 
+        .user-modal-styling .form-group input[type="email"]:focus, 
+        .user-modal-styling .form-group input[type="password"]:focus, 
+        .user-modal-styling .form-group select:focus {
+            border-color: #3182CE;
+            box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.2);
+            outline: none;
+        }
+
+        .user-modal-styling .form-actions {
+            text-align: right;
+            margin-top: 24px;
+            padding-top: 16px;
+            border-top: 1px solid #E2E8F0;
+        }
+
+        .user-modal-styling .form-actions button {
+            padding: 10px 18px;
+            border-radius: 6px;
+            font-size: 0.9375rem;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            margin-left: 10px;
+            transition: background-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .user-modal-styling .form-actions .save-button {
+            background-color: #3182CE;
+            color: white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .user-modal-styling .form-actions .save-button:hover {
+            background-color: #2B6CB0;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+        }
+
+        .user-modal-styling .form-actions .cancel-button {
+            background-color: #E2E8F0;
+            color: #4A5568;
+            border: 1px solid #CBD5E0;
+        }
+        .user-modal-styling .form-actions .cancel-button:hover {
+            background-color: #CBD5E0;
+            border-color: #A0AEC0;
+        }
+        #mainContentPortal .empty-table-message {
+            text-align: center;
+            padding: 32px 16px;
+            font-size: 1rem;
+            color: #718096;
+        }
+        /* 为所属项目列设置合适的宽度和样式 */
+        #mainContentPortal th:nth-child(5), 
+        #mainContentPortal td:nth-child(5) {
+            max-width: 200px;
+            word-wrap: break-word;
+            white-space: normal;
+        }
+        .role-badge {
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        .role-platform-admin {
+            background-color: #FED7E2;
+            color: #97266D;
+        }
+        .role-platform-ops {
+            background-color: #D6F5D6;
+            color: #22543D;
+        }
+        .role-platform-audit {
+            background-color: #BEE3F8;
+            color: #2A4365;
+        }
+        .role-platform-user {
+            background-color: #E6FFFA;
+            color: #234E52;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <main class="content-area">
+            <button id="um_addUserBtn" class="add-button">
+                <i class="fas fa-user-plus"></i> 新增用户
+            </button>
+
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>用户ID</th>
+                            <th>用户名</th>
+                            <th>邮箱</th>
+                            <th>状态</th>
+                            <th>平台角色</th>
+                            <th>所属项目</th>
+                            <th>创建时间</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="um_userTableBody">
+                        <!-- Populated by JS -->
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <div id="um_userModal" class="modal user-modal-styling">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="um_modalTitle">新增用户</h2>
+                <button type="button" class="close-button" data-close-um-modal>&times;</button>
+            </div>
+            <form id="um_userForm">
+                <input type="hidden" id="um_userId">
+                <div class="form-group">
+                    <label for="um_username">用户名:</label>
+                    <input type="text" id="um_username" name="username" required>
+                </div>
+                <div class="form-group">
+                    <label for="um_email">邮箱:</label>
+                    <input type="email" id="um_email" name="email" required>
+                </div>
+                <div class="form-group">
+                    <label for="um_password">密码:</label>
+                    <input type="password" id="um_password" name="password">
+                    <small id="um_passwordHelp" class="text-xs text-gray-500 block mt-1">新增用户时必填，编辑用户时如不修改请留空。</small>
+                </div>
+                <div class="form-group">
+                    <label for="um_status">状态:</label>
+                    <select id="um_status" name="status">
+                        <option value="active">激活</option>
+                        <option value="inactive">禁用</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="um_platformRole">平台角色:</label>
+                    <select id="um_platformRole" name="platformRole" required>
+                        <option value="role_platform_user">普通用户（默认）</option>
+                    </select>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="cancel-button" data-cancel-um-modal>取消</button>
+                    <button type="submit" class="save-button">保存</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+<script>
+    (function() { // IIFE for local scope
+        const modalId = 'um_userModal';
+        const formId = 'um_userForm';
+        const tableBodyId = 'um_userTableBody';
+        const addBtnId = 'um_addUserBtn';
+
+        if (document.getElementById(tableBodyId) && document.getElementById(tableBodyId).dataset.initialized === 'true') {
+            return; 
+        }
+
+        const userModal = document.getElementById(modalId);
+        const userForm = document.getElementById(formId);
+        const userTableBody = document.getElementById(tableBodyId);
+        const modalTitle = document.getElementById('um_modalTitle');
+        const userIdInput = document.getElementById('um_userId');
+        const usernameInput = document.getElementById('um_username');
+        const emailInput = document.getElementById('um_email');
+        const passwordInput = document.getElementById('um_password');
+        const passwordHelpText = document.getElementById('um_passwordHelp');
+        const statusSelect = document.getElementById('um_status');
+        const platformRoleSelect = document.getElementById('um_platformRole');
+        const addUserBtn = document.getElementById(addBtnId);
+
+        if (!userModal || !userForm || !userTableBody || !addUserBtn) {
+            // console.error("User Management: Core DOM elements not found. Skipping init.");
+            return;
+        }
+
+        const LS_USERS_KEY = 'dataPlatformUsers';
+        const LS_PROJECTS_KEY = 'dataPlatformProjects'; // To check if user is a project admin
+        const LS_ASSIGNMENTS_KEY = 'dataPlatformProjectUserAssignments'; // To get user's project assignments
+        const LS_ROLES_KEY = 'dataPlatformRoles'; // To get platform roles
+
+        let users = [];
+        let projects = [];
+        let projectUserAssignments = [];
+        let roles = [];
+
+        // Load platform roles for selection
+        function loadRoles() {
+            const storedRoles = localStorage.getItem(LS_ROLES_KEY);
+            roles = storedRoles ? JSON.parse(storedRoles) : [];
+            updatePlatformRoleSelect();
+        }
+
+        // Update platform role select options
+        function updatePlatformRoleSelect() {
+            const platformRoles = roles.filter(role => role.type === 'platform');
+            platformRoleSelect.innerHTML = '<option value="role_platform_user">普通用户（默认）</option>';
+            platformRoles.forEach(role => {
+                if (role.id !== 'role_platform_user') { // 避免重复添加默认选项
+                    const option = document.createElement('option');
+                    option.value = role.id;
+                    option.textContent = role.name;
+                    platformRoleSelect.appendChild(option);
+                }
+            });
+        }
+
+        // Get role name by role id
+        function getRoleName(roleId) {
+            if (!roleId) return '普通用户'; // 默认显示
+            const role = roles.find(r => r.id === roleId);
+            return role ? role.name : roleId;
+        }
+
+        // Get role badge class by role id
+        function getRoleBadgeClass(roleId) {
+            if (!roleId) return 'role-platform-user';
+            return roleId.replace('role_', 'role-').replace('_', '-');
+        }
+
+        function loadProjects() {
+            const storedProjects = localStorage.getItem(LS_PROJECTS_KEY);
+            projects = storedProjects ? JSON.parse(storedProjects) : [];
+        }
+
+        function loadProjectUserAssignments() {
+            const storedAssignments = localStorage.getItem(LS_ASSIGNMENTS_KEY);
+            projectUserAssignments = storedAssignments ? JSON.parse(storedAssignments) : [];
+        }
+
+        function loadUsers() {
+            const storedUsers = localStorage.getItem(LS_USERS_KEY);
+            users = storedUsers ? JSON.parse(storedUsers) : [
+                { 
+                    id: 'user_admin', 
+                    username: 'admin', 
+                    email: 'admin@dataplatform.com', 
+                    passwordHash: 'simulated_hash_admin', 
+                    status: 'active',
+                    platformRole: 'role_platform_admin',
+                    platformRoleAssignedAt: '2023-01-01T10:00:00Z',
+                    createdAt: '2023-01-01T10:00:00Z', 
+                    isUndeletable: true 
+                },
+                { 
+                    id: 'user_001', 
+                    username: '张伟', 
+                    email: 'zhang.wei@company.com', 
+                    passwordHash: 'simulated_hash_zhangwei', 
+                    status: 'active',
+                    platformRole: 'role_platform_ops',
+                    platformRoleAssignedAt: '2023-02-15T09:30:00Z',
+                    createdAt: '2023-02-15T09:30:00Z' 
+                },
+                { 
+                    id: 'user_002', 
+                    username: '李娜', 
+                    email: 'li.na@company.com', 
+                    passwordHash: 'simulated_hash_lina', 
+                    status: 'active',
+                    platformRole: 'role_platform_user',
+                    platformRoleAssignedAt: '2023-03-10T14:20:00Z',
+                    createdAt: '2023-03-10T14:20:00Z' 
+                },
+                { 
+                    id: 'user_003', 
+                    username: '王强', 
+                    email: 'wang.qiang@company.com', 
+                    passwordHash: 'simulated_hash_wangqiang', 
+                    status: 'active',
+                    platformRole: 'role_platform_audit',
+                    platformRoleAssignedAt: '2023-04-05T11:15:00Z',
+                    createdAt: '2023-04-05T11:15:00Z' 
+                },
+                { 
+                    id: 'user_004', 
+                    username: '刘敏', 
+                    email: 'liu.min@company.com', 
+                    passwordHash: 'simulated_hash_liumin', 
+                    status: 'active',
+                    platformRole: 'role_platform_user',
+                    platformRoleAssignedAt: '2023-05-20T16:45:00Z',
+                    createdAt: '2023-05-20T16:45:00Z' 
+                },
+                { 
+                    id: 'user_005', 
+                    username: '陈杰', 
+                    email: 'chen.jie@company.com', 
+                    passwordHash: 'simulated_hash_chenjie', 
+                    status: 'inactive',
+                    platformRole: 'role_platform_user',
+                    platformRoleAssignedAt: '2023-06-12T13:30:00Z',
+                    createdAt: '2023-06-12T13:30:00Z' 
+                },
+                { 
+                    id: 'user_006', 
+                    username: '赵丽', 
+                    email: 'zhao.li@company.com', 
+                    passwordHash: 'simulated_hash_zhaoli', 
+                    status: 'active',
+                    platformRole: 'role_platform_ops',
+                    platformRoleAssignedAt: '2023-07-08T10:20:00Z',
+                    createdAt: '2023-07-08T10:20:00Z' 
+                },
+                { 
+                    id: 'user_007', 
+                    username: '孙涛', 
+                    email: 'sun.tao@company.com', 
+                    passwordHash: 'simulated_hash_suntao', 
+                    status: 'active',
+                    platformRole: 'role_platform_user',
+                    platformRoleAssignedAt: '2023-08-15T15:10:00Z',
+                    createdAt: '2023-08-15T15:10:00Z' 
+                }
+            ];
+            if (!storedUsers && users.length > 0) {
+                localStorage.setItem(LS_USERS_KEY, JSON.stringify(users));
+            }
+            
+            // 加载项目数据
+            const storedProjects = localStorage.getItem(LS_PROJECTS_KEY);
+            projects = storedProjects ? JSON.parse(storedProjects) : [];
+            
+            // 加载项目用户分配数据
+            const storedAssignments = localStorage.getItem(LS_ASSIGNMENTS_KEY);
+            projectUserAssignments = storedAssignments ? JSON.parse(storedAssignments) : [];
+            
+            renderUsers();
+        }
+
+        function formatDate(isoString) {
+            if (!isoString) return '-';
+            try {
+                return new Date(isoString).toLocaleString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
+            } catch (e) {
+                return isoString; // Fallback if date is invalid
+            }
+        }
+
+        function getUserProjects(userId) {
+            // 获取用户作为项目管理员的项目
+            const adminProjects = projects.filter(p => p.admin === userId).map(p => p.name);
+            
+            // 获取用户被分配到的项目
+            const assignedProjectIds = projectUserAssignments
+                .filter(a => a.userId === userId)
+                .map(a => a.projectId);
+            const assignedProjects = projects
+                .filter(p => assignedProjectIds.includes(p.id))
+                .map(p => p.name);
+            
+            // 合并并去重
+            const allProjects = [...new Set([...adminProjects, ...assignedProjects])];
+            
+            return allProjects.length > 0 ? allProjects.join(', ') : '-';
+        }
+
+        function renderUsers() {
+            if (!userTableBody) return;
+            userTableBody.innerHTML = '';
+            if (users.length === 0) {
+                userTableBody.innerHTML = `<tr><td colspan="8" class="empty-table-message">暂无用户数据</td></tr>`;
+                return;
+            }
+            users.forEach(user => {
+                const statusClass = user.status === 'active' ? 'status-active' : 'status-inactive';
+                const statusText = user.status === 'active' ? '激活' : '禁用';
+                const projectsText = getUserProjects(user.id);
+                const platformRoleText = getRoleName(user.platformRole);
+                const deleteButtonDisabled = user.isUndeletable ? 'disabled title="此用户不能删除"' : '';
+                const deleteButtonIcon = user.isUndeletable ? 'fa-ban' : 'fa-trash-alt';
+
+                const rowHTML = `
+                    <tr>
+                        <td>${user.id}</td>
+                        <td>${user.username}</td>
+                        <td>${user.email}</td>
+                        <td><span class="status-badge ${statusClass}">${statusText}</span></td>
+                        <td><span class="role-badge ${getRoleBadgeClass(user.platformRole)}">${platformRoleText}</span></td>
+                        <td>${projectsText}</td>
+                        <td>${new Date(user.createdAt).toLocaleDateString('zh-CN')}</td>
+                        <td class="action-buttons">
+                            <button data-edit-id="${user.id}"><i class="fas fa-edit"></i> 编辑</button>
+                            <button class="delete-button" data-delete-id="${user.id}" ${deleteButtonDisabled}>
+                                <i class="fas ${deleteButtonIcon}"></i> ${user.isUndeletable ? '' : '删除'}
+                            </button>
+                        </td>
+                    </tr>
+                `;
+                userTableBody.insertAdjacentHTML('beforeend', rowHTML);
+            });
+        }
+
+        function openModal(isEdit = false, userIdToEdit = null) {
+            if (!userForm || !modalTitle || !passwordInput || !passwordHelpText) return;
+            userForm.reset();
+            userIdInput.value = '';
+            passwordInput.required = false; 
+            passwordHelpText.textContent = '编辑用户时如不修改密码请留空。';
+
+            if (isEdit && userIdToEdit) {
+                const user = users.find(u => u.id === userIdToEdit);
+                if (user) {
+                    modalTitle.textContent = '编辑用户';
+                    userIdInput.value = user.id;
+                    usernameInput.value = user.username;
+                    emailInput.value = user.email;
+                    statusSelect.value = user.status;
+                    platformRoleSelect.value = user.platformRole || 'role_platform_user';
+                    // Username and email of undeletable users should not be editable
+                    if (user.isUndeletable) {
+                        usernameInput.readOnly = true;
+                        emailInput.readOnly = true;
+                    } else {
+                        usernameInput.readOnly = false;
+                        emailInput.readOnly = false;
+                    }
+                } else {
+                    alert('未找到用户!');
+                    return;
+                }
+            } else {
+                modalTitle.textContent = '新增用户';
+                passwordInput.required = true;
+                passwordHelpText.textContent = '新增用户时密码为必填项。';
+                usernameInput.readOnly = false;
+                emailInput.readOnly = false;
+            }
+            if(userModal) userModal.style.display = 'block';
+        }
+
+        function closeModal() {
+            if(userModal) userModal.style.display = 'none';
+        }
+
+        addUserBtn.onclick = () => openModal(false);
+
+        userTableBody.addEventListener('click', function(event) {
+            const editButton = event.target.closest('button[data-edit-id]');
+            const deleteButton = event.target.closest('button.delete-button[data-delete-id]');
+
+            if (editButton) {
+                openModal(true, editButton.dataset.editId);
+            }
+            if (deleteButton && !deleteButton.disabled) {
+                const userIdToDelete = deleteButton.dataset.deleteId;
+                const userToDelete = users.find(u => u.id === userIdToDelete);
+                if (userToDelete && userToDelete.isUndeletable) {
+                    alert('核心用户不能删除。');
+                    return;
+                }
+
+                // 检查用户是否是项目管理员
+                const isProjectAdmin = projects.some(p => p.admin === userIdToDelete);
+                
+                // 检查用户是否被分配到项目
+                const hasProjectAssignments = projectUserAssignments.some(a => a.userId === userIdToDelete);
+
+                if (isProjectAdmin) {
+                    alert('此用户是某些项目的管理员，请先更改项目管理员后再删除用户。');
+                    return;
+                }
+                
+                if (hasProjectAssignments) {
+                    alert('此用户已分配到项目中，请先从项目中移除该用户后再删除。');
+                    return;
+                }
+
+                if (confirm('确定要删除此用户吗？')) {
+                    users = users.filter(u => u.id !== userIdToDelete);
+                    saveAndRenderUsers();
+                }
+            }
+        });
+        
+        const closeButton = userModal.querySelector('button[data-close-um-modal]');
+        if(closeButton) closeButton.onclick = closeModal;
+
+        const cancelButton = userModal.querySelector('button[data-cancel-um-modal]');
+        if(cancelButton) cancelButton.onclick = closeModal;
+
+        userForm.onsubmit = function(event) {
+            event.preventDefault();
+            const id = userIdInput.value;
+            const username = usernameInput.value.trim();
+            const email = emailInput.value.trim();
+            const password = passwordInput.value;
+            const status = statusSelect.value;
+            const platformRole = platformRoleSelect.value || 'role_platform_user';
+
+            if (!username || !email || !platformRole) {
+                alert('用户名、邮箱和平台角色不能为空！');
+                return;
+            }
+            if (!id && !password) { // New user and no password
+                alert('新增用户时密码不能为空！');
+                return;
+            }
+            // Basic email validation
+            if (!/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/.test(email)){
+                alert('请输入有效的邮箱地址。');
+                return;
+            }
+
+            const existingUserByEmail = users.find(u => u.email.toLowerCase() === email.toLowerCase() && u.id !== id);
+            if (existingUserByEmail) {
+                alert('此邮箱已被其他用户注册，请使用其他邮箱。');
+                return;
+            }
+            const existingUserByUsername = users.find(u => u.username.toLowerCase() === username.toLowerCase() && u.id !== id);
+            if (existingUserByUsername) {
+                alert('用户名已存在，请使用其他用户名。');
+                return;
+            }
+
+            if (id) { // Edit mode
+                const userIndex = users.findIndex(u => u.id === id);
+                if (userIndex > -1) {
+                    const existingUser = users[userIndex];
+                     // For undeletable users, only allow status change
+                    if (existingUser.isUndeletable) {
+                        users[userIndex] = { ...existingUser, status };
+                    } else {
+                        const oldPlatformRole = existingUser.platformRole;
+                        const updatedUser = {
+                            ...existingUser,
+                            username,
+                            email,
+                            status,
+                            platformRole,
+                            passwordHash: password ? `simulated_hash_${username}_${new Date().getTime()}` : existingUser.passwordHash
+                        };
+                        
+                        // 如果平台角色发生变化，更新分配时间
+                        if (oldPlatformRole !== platformRole) {
+                            updatedUser.platformRoleAssignedAt = new Date().toISOString();
+                        }
+                        
+                        users[userIndex] = updatedUser;
+                    }
+                }
+            } else { // Add mode
+                const newUser = {
+                    id: 'user_' + new Date().getTime().toString().slice(-6) + Math.random().toString(36).substring(2, 5),
+                    username,
+                    email,
+                    passwordHash: `simulated_hash_${username}_${new Date().getTime()}`,
+                    status,
+                    platformRole,
+                    platformRoleAssignedAt: new Date().toISOString(),
+                    createdAt: new Date().toISOString()
+                };
+                users.push(newUser);
+            }
+            saveAndRenderUsers();
+            closeModal();
+        };
+
+        function saveAndRenderUsers() {
+            localStorage.setItem(LS_USERS_KEY, JSON.stringify(users));
+            renderUsers();
+        }
+        
+        // Load all required data
+        loadRoles();
+        loadUsers();
+        loadProjects();
+        loadProjectUserAssignments();
+
+        if (userTableBody) {
+            userTableBody.dataset.initialized = 'true';
+        }
+    })();
+</script>
+</body>
+</html> 

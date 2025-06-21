@@ -1,0 +1,1059 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>角色管理 - 数据平台权限管理</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: #f0f2f5;
+            color: #333;
+        }
+        .app-container {
+            max-width: none;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .content-area {
+            padding: 0;
+            flex-grow: 1;
+        }
+        .table-container {
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 12px 16px;
+            text-align: left;
+            border-bottom: 1px solid #e5e5e5;
+            font-size: 0.9375rem;
+        }
+        th {
+            background-color: #f7f7f7;
+            font-weight: 500;
+        }
+        tr:last-child td {
+            border-bottom: none;
+        }
+        .action-buttons button {
+            color: #007aff;
+            background: none;
+            border: none;
+            padding: 6px 8px;
+            margin-right: 8px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            border-radius: 6px;
+            transition: background-color 0.2s ease;
+        }
+        .action-buttons button:hover {
+            background-color: #e7f3ff;
+        }
+        .action-buttons .delete-button {
+            color: #ff3b30;
+        }
+        .action-buttons .delete-button:hover {
+            background-color: #ffebee;
+        }
+        .add-button {
+            background-color: #007aff;
+            color: white;
+            padding: 10px 18px;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.9375rem;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            margin-bottom: 20px;
+            display: inline-flex;
+            align-items: center;
+        }
+        .add-button i {
+            margin-right: 8px;
+        }
+        .add-button:hover {
+            background-color: #005bb5;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 8% auto;
+            padding: 24px;
+            border: 1px solid #d1d1d6;
+            width: 90%;
+            max-width: 600px;
+            border-radius: 14px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .modal-header h2 {
+            font-size: 1.125rem;
+            font-weight: 600;
+        }
+        .close-button {
+            color: #aaa;
+            font-size: 24px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .form-group {
+            margin-bottom: 16px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 0.875rem;
+            color: #333;
+            font-weight: 500;
+        }
+        .form-group input[type="text"], .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #d1d1d6;
+            border-radius: 8px;
+            font-size: 0.9375rem;
+            box-sizing: border-box;
+        }
+        .permissions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin-top: 8px;
+            padding: 10px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .permission-item label {
+            font-weight: normal;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+        }
+        .permission-item input[type="checkbox"] {
+            margin-right: 8px;
+            accent-color: #007aff; /* iOS blue for checkbox */
+        }
+        .form-actions {
+            text-align: right;
+            margin-top: 24px;
+        }
+        .form-actions button {
+            padding: 10px 18px;
+            border-radius: 8px;
+            font-size: 0.9375rem;
+            cursor: pointer;
+            border: none;
+            margin-left: 10px;
+        }
+        .form-actions .save-button {
+            background-color: #007aff;
+            color: white;
+        }
+        .form-actions .cancel-button {
+            background-color: #e5e5e5;
+            color: #333;
+        }
+        /* Tech Blue Theme Styles for role_management.html */
+        #mainContentPortal .content-area {
+            padding: 20px;
+            flex-grow: 1;
+        }
+
+        #mainContentPortal .table-container {
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+            border: 1px solid #CBD5E0;
+        }
+
+        #mainContentPortal table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        #mainContentPortal th, #mainContentPortal td {
+            padding: 12px 16px;
+            text-align: left;
+            border-bottom: 1px solid #E2E8F0;
+            font-size: 0.9375rem;
+        }
+
+        #mainContentPortal th {
+            background-color: #F7FAFC;
+            font-weight: 600;
+            color: #2D3748;
+            text-transform: uppercase;
+            font-size: 0.875rem;
+        }
+
+        #mainContentPortal td {
+            color: #4A5568;
+        }
+
+        #mainContentPortal tr:last-child td {
+            border-bottom: none;
+        }
+
+        #mainContentPortal .action-buttons button {
+            color: #3182CE;
+            background: none;
+            border: 1px solid transparent;
+            padding: 6px 10px;
+            margin-right: 8px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+        }
+        #mainContentPortal .action-buttons button i {
+            margin-right: 4px;
+        }
+
+        #mainContentPortal .action-buttons button:hover {
+            background-color: #EBF8FF;
+            border-color: #90CDF4;
+            color: #2B6CB0;
+        }
+
+        #mainContentPortal .action-buttons .delete-button {
+            color: #E53E3E;
+        }
+
+        #mainContentPortal .action-buttons .delete-button:hover {
+            background-color: #FFF5F5;
+            border-color: #FEB2B2;
+            color: #C53030;
+        }
+        #mainContentPortal .action-buttons .delete-button[disabled] {
+            color: #A0AEC0; 
+            cursor: not-allowed;
+            background-color: transparent;
+            border-color: transparent;
+        }
+        #mainContentPortal .action-buttons .delete-button[disabled]:hover {
+             color: #A0AEC0; 
+             background-color: transparent;
+        }
+
+        #mainContentPortal .add-button {
+            background-color: #3182CE;
+            color: white;
+            padding: 10px 18px;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.9375rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            margin-bottom: 20px;
+            display: inline-flex;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        #mainContentPortal .add-button i {
+            margin-right: 8px;
+        }
+        #mainContentPortal .add-button:hover {
+            background-color: #2B6CB0;
+        }
+
+        /* Modal styles using a specific class */
+        .role-modal-styling.modal {
+            display: none;
+            position: fixed;
+            z-index: 1050;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .role-modal-styling .modal-content {
+            background-color: #ffffff;
+            margin: 5% auto; /* Slightly higher for potentially taller content */
+            padding: 24px;
+            border: 1px solid #E2E8F0;
+            width: 90%;
+            max-width: 600px; /* Wider for permission selection */
+            border-radius: 8px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1), 0 5px 10px rgba(0,0,0,0.04);
+        }
+
+        .role-modal-styling .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #E2E8F0;
+        }
+
+        .role-modal-styling .modal-header h2 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #2A4365;
+        }
+
+        .role-modal-styling .close-button {
+            color: #718096;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            background: none;
+            border: none;
+            padding: 0 4px;
+            line-height: 1;
+        }
+        .role-modal-styling .close-button:hover {
+            color: #2D3748;
+        }
+
+        .role-modal-styling .form-group {
+            margin-bottom: 16px;
+        }
+
+        .role-modal-styling .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 0.875rem;
+            color: #4A5568;
+            font-weight: 500;
+        }
+
+        .role-modal-styling .form-group input[type="text"], 
+        .role-modal-styling .form-group textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #CBD5E0;
+            border-radius: 6px;
+            font-size: 0.9375rem;
+            box-sizing: border-box;
+            background-color: #FFFFFF;
+            color: #2D3748;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+        .role-modal-styling .form-group input[type="text"]:focus, 
+        .role-modal-styling .form-group textarea:focus {
+            border-color: #3182CE;
+            box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.2);
+            outline: none;
+        }
+
+        .role-modal-styling .form-group textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+
+        .role-modal-styling .permissions-grid {
+            max-height: 400px; /* 增加高度以容纳树形结构 */
+            overflow-y: auto;
+            padding: 10px;
+            border: 1px solid #E2E8F0;
+            border-radius: 6px;
+            background-color: #FDFDFE;
+        }
+
+        .role-modal-styling .menu-category {
+            margin-bottom: 12px;
+        }
+
+        .role-modal-styling .menu-category-header {
+            display: flex;
+            align-items: center;
+            padding: 8px;
+            background-color: #EDF2F7;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            font-weight: 600;
+            color: #2D3748;
+            border: 1px solid #E2E8F0;
+        }
+
+        .role-modal-styling .menu-category-header:hover {
+            background-color: #E2E8F0;
+        }
+
+        .role-modal-styling .menu-category-header i {
+            margin-right: 8px;
+            width: 16px;
+            transition: transform 0.2s;
+        }
+
+        .role-modal-styling .menu-category-header.collapsed i {
+            transform: rotate(-90deg);
+        }
+
+        .role-modal-styling .menu-category-content {
+            max-height: 500px;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+            padding-left: 24px;
+            margin-top: 8px;
+        }
+
+        .role-modal-styling .menu-category-content.collapsed {
+            max-height: 0;
+            margin-top: 0;
+        }
+
+        .role-modal-styling .permission-item {
+            display: flex;
+            align-items: center;
+            padding: 6px 8px;
+            border-radius: 4px;
+            background-color: #F7FAFC;
+            border: 1px solid transparent;
+            transition: background-color 0.2s, border-color 0.2s;
+            margin-bottom: 4px;
+        }
+        
+        .role-modal-styling .permission-item:hover {
+            background-color: #EBF8FF;
+            border-color: #BEE3F8;
+        }
+
+        .role-modal-styling .permission-item input[type="checkbox"] {
+            margin-right: 10px;
+            height: 16px; 
+            width: 16px; 
+            accent-color: #3182CE;
+        }
+        
+        .role-modal-styling .permission-item label {
+            font-size: 0.9rem;
+            color: #4A5568;
+            margin-bottom: 0;
+            font-weight: normal;
+            cursor: pointer;
+            flex-grow: 1;
+        }
+
+        .role-modal-styling .permission-category-checkbox {
+            margin-right: 8px;
+        }
+
+        .role-modal-styling .form-actions {
+            text-align: right;
+            margin-top: 24px;
+            padding-top: 16px;
+            border-top: 1px solid #E2E8F0;
+        }
+
+        .role-modal-styling .form-actions button {
+            padding: 10px 18px;
+            border-radius: 6px;
+            font-size: 0.9375rem;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            margin-left: 10px;
+            transition: background-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .role-modal-styling .form-actions .save-button {
+            background-color: #3182CE;
+            color: white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .role-modal-styling .form-actions .save-button:hover {
+            background-color: #2B6CB0;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+        }
+
+        .role-modal-styling .form-actions .cancel-button {
+            background-color: #E2E8F0;
+            color: #4A5568;
+            border: 1px solid #CBD5E0;
+        }
+        .role-modal-styling .form-actions .cancel-button:hover {
+            background-color: #CBD5E0;
+            border-color: #A0AEC0;
+        }
+         #mainContentPortal .empty-table-message {
+            text-align: center;
+            padding: 32px 16px;
+            font-size: 1rem;
+            color: #718096;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <main class="content-area">
+            <button id="rm_addRoleBtn" class="add-button">
+                <i class="fas fa-plus"></i> 新增角色
+            </button>
+
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>角色ID</th>
+                            <th>角色名称</th>
+                            <th>角色类型</th>
+                            <th>描述</th>
+                            <th>权限数量</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="rm_roleTableBody">
+                        <!-- Populated by JS -->
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <div id="rm_roleModal" class="modal role-modal-styling">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="rm_modalTitle">新增角色</h2>
+                <button type="button" class="close-button" data-close-rm-modal>&times;</button>
+            </div>
+            <form id="rm_roleForm">
+                <input type="hidden" id="rm_roleId">
+                <div class="form-group">
+                    <label for="rm_roleName">角色名称:</label>
+                    <input type="text" id="rm_roleName" name="roleName" required>
+                </div>
+                <div class="form-group">
+                    <label for="rm_roleType">角色类型:</label>
+                    <select id="rm_roleType" name="roleType" required>
+                        <option value="platform">平台角色</option>
+                        <option value="project">项目角色</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="rm_roleDescription">角色描述:</label>
+                    <textarea id="rm_roleDescription" name="roleDescription"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>分配权限 (按功能模块):</label>
+                    <div style="font-size: 0.875rem; color: #718096; margin-bottom: 8px;">
+                        💡 点击模块名可展开/折叠，勾选模块名可快速选择该模块下的所有权限
+                    </div>
+                    <div id="rm_permissionsGrid" class="permissions-grid">
+                        <!-- Permissions checkboxes will be populated by JS -->
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="cancel-button" data-cancel-rm-modal>取消</button>
+                    <button type="submit" class="save-button">保存</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+<script>
+    (function() { // IIFE for local scope
+        const modalId = 'rm_roleModal';
+        const formId = 'rm_roleForm';
+        const tableBodyId = 'rm_roleTableBody';
+        const addBtnId = 'rm_addRoleBtn';
+        const permissionsGridId = 'rm_permissionsGrid';
+
+        if (document.getElementById(tableBodyId) && document.getElementById(tableBodyId).dataset.initialized === 'true') {
+            return; 
+        }
+
+        const roleModal = document.getElementById(modalId);
+        const roleForm = document.getElementById(formId);
+        const roleTableBody = document.getElementById(tableBodyId);
+        const modalTitle = document.getElementById('rm_modalTitle');
+        const roleIdInput = document.getElementById('rm_roleId');
+        const roleNameInput = document.getElementById('rm_roleName');
+        const roleDescriptionInput = document.getElementById('rm_roleDescription');
+        const permissionsGrid = document.getElementById(permissionsGridId);
+        const addRoleBtn = document.getElementById(addBtnId);
+
+        if (!roleModal || !roleForm || !roleTableBody || !permissionsGrid || !addRoleBtn) {
+            // console.error("Role Management: Core DOM elements not found. Skipping init.");
+            return;
+        }
+
+        const LS_ROLES_KEY = 'dataPlatformRoles';
+        const CORE_ROLE_IDS = ['role_platform_admin', 'role_platform_ops', 'role_platform_audit', 'role_platform_user', 'role_project_manager', 'role_project_developer', 'role_project_analyst', 'role_project_viewer']; // IDs of roles that cannot be deleted
+
+        const PERMISSIONS_STRUCTURE = {
+            '工作台': {
+                icon: 'fas fa-tachometer-alt',
+                permissions: ['查看数据看板', '管理数据看板', '导出数据看板']
+            },
+            '数据管理': {
+                icon: 'fas fa-database',
+                permissions: ['查看数据源', '管理数据源', '配置数据连接', '查看数据模型', '管理数据模型', '发布数据模型']
+            },
+            '查询分析': {
+                icon: 'fas fa-search',
+                permissions: ['执行数据查询', '管理查询任务', '查看查询历史']
+            },
+            '任务调度': {
+                icon: 'fas fa-clock',
+                permissions: ['查看任务调度', '管理任务调度', '监控任务执行']
+            },
+            '数据质量': {
+                icon: 'fas fa-shield-alt',
+                permissions: ['查看数据质量报告', '管理数据质量规则', '配置质量监控']
+            },
+            '系统管理': {
+                icon: 'fas fa-cogs',
+                permissions: ['查看用户行为日志', '管理系统配置', '查看系统监控', '管理平台用户', '管理平台角色', '管理平台项目']
+            }
+        };
+
+        let roles = [];
+
+        function populatePermissionsGrid(selectedPermissions = []) {
+            if (!permissionsGrid) return;
+            permissionsGrid.innerHTML = '';
+            
+            Object.keys(PERMISSIONS_STRUCTURE).forEach(category => {
+                const categoryData = PERMISSIONS_STRUCTURE[category];
+                const categoryId = `category_${category.replace(/\s+/g, '_')}`;
+                const categoryPermissions = categoryData.permissions;
+                
+                // 检查分类下的权限选中状态
+                const selectedCount = categoryPermissions.filter(p => selectedPermissions.includes(p)).length;
+                const isAllSelected = selectedCount === categoryPermissions.length;
+                const isPartialSelected = selectedCount > 0 && selectedCount < categoryPermissions.length;
+                
+                const categoryHTML = `
+                    <div class="menu-category">
+                        <div class="menu-category-header" onclick="toggleCategory('${categoryId}')">
+                            <i class="fas fa-chevron-down"></i>
+                            <input type="checkbox" class="permission-category-checkbox" 
+                                   id="${categoryId}_all" 
+                                   ${isAllSelected ? 'checked' : ''} 
+                                   ${isPartialSelected ? 'style="opacity: 0.5"' : ''}
+                                   onchange="toggleCategoryPermissions('${category}', this.checked)">
+                            <i class="${categoryData.icon}" style="margin-right: 8px; color: #4A5568;"></i>
+                            <span>${category} (${selectedCount}/${categoryPermissions.length})</span>
+                        </div>
+                        <div class="menu-category-content" id="${categoryId}_content">
+                            ${categoryPermissions.map(permission => {
+                                const checkboxId = `perm_${permission.replace(/\s+/g, '.')}`;
+                                const isChecked = selectedPermissions.includes(permission);
+                                return `
+                                    <div class="permission-item">
+                                        <input type="checkbox" id="${checkboxId}" name="permissions" 
+                                               value="${permission}" ${isChecked ? 'checked' : ''}
+                                               onchange="updateCategoryStatus('${category}')">
+                                        <label for="${checkboxId}">${permission}</label>
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    </div>
+                `;
+                permissionsGrid.insertAdjacentHTML('beforeend', categoryHTML);
+            });
+        }
+
+        // 将函数暴露到全局作用域，以便HTML中的onclick可以调用
+        window.toggleCategory = function(categoryId) {
+            const header = document.querySelector(`[onclick="toggleCategory('${categoryId}')"]`);
+            const content = document.getElementById(`${categoryId}_content`);
+            const icon = header.querySelector('i.fa-chevron-down');
+            
+            header.classList.toggle('collapsed');
+            content.classList.toggle('collapsed');
+            
+            if (header.classList.contains('collapsed')) {
+                content.style.maxHeight = '0px';
+                icon.style.transform = 'rotate(-90deg)';
+            } else {
+                content.style.maxHeight = content.scrollHeight + 'px';
+                icon.style.transform = 'rotate(0deg)';
+            }
+        };
+
+        window.toggleCategoryPermissions = function(category, checked) {
+            const categoryPermissions = PERMISSIONS_STRUCTURE[category].permissions;
+            categoryPermissions.forEach(permission => {
+                const checkboxId = `perm_${permission.replace(/\s+/g, '.')}`;
+                const checkbox = document.getElementById(checkboxId);
+                if (checkbox) {
+                    checkbox.checked = checked;
+                }
+            });
+            updateCategoryStatus(category);
+        };
+
+        window.updateCategoryStatus = function(category) {
+            const categoryId = `category_${category.replace(/\s+/g, '_')}`;
+            const categoryCheckbox = document.getElementById(`${categoryId}_all`);
+            const categoryHeader = document.querySelector(`[onclick="toggleCategory('${categoryId}')"] span`);
+            const categoryPermissions = PERMISSIONS_STRUCTURE[category].permissions;
+            
+            let selectedCount = 0;
+            categoryPermissions.forEach(permission => {
+                const checkboxId = `perm_${permission.replace(/\s+/g, '.')}`;
+                const checkbox = document.getElementById(checkboxId);
+                if (checkbox && checkbox.checked) {
+                    selectedCount++;
+                }
+            });
+            
+            const isAllSelected = selectedCount === categoryPermissions.length;
+            const isPartialSelected = selectedCount > 0 && selectedCount < categoryPermissions.length;
+            
+            categoryCheckbox.checked = isAllSelected;
+            categoryCheckbox.style.opacity = isPartialSelected ? '0.5' : '1';
+            categoryHeader.textContent = `${category} (${selectedCount}/${categoryPermissions.length})`;
+        };
+
+        function loadRoles() {
+            const storedRoles = localStorage.getItem(LS_ROLES_KEY);
+            roles = storedRoles ? JSON.parse(storedRoles) : [
+                // 平台级角色
+                { 
+                    id: 'role_platform_admin', 
+                    name: '平台管理员', 
+                    description: '拥有所有平台管理权限，负责整个数据平台的运维和管理', 
+                    type: 'platform',
+                    permissions: [
+                        '查看数据看板', '管理数据看板', '导出数据看板',
+                        '查看数据源', '管理数据源', '配置数据连接',
+                        '查看数据模型', '管理数据模型', '发布数据模型',
+                        '执行数据查询', '管理查询任务', '查看查询历史',
+                        '查看任务调度', '管理任务调度', '监控任务执行',
+                        '查看数据质量报告', '管理数据质量规则', '配置质量监控',
+                        '查看用户行为日志', '管理系统配置', '查看系统监控',
+                        '管理平台用户', '管理平台角色', '管理平台项目'
+                    ], 
+                    isCore: true 
+                },
+                { 
+                    id: 'role_platform_ops', 
+                    name: '平台运维', 
+                    description: '负责平台的日常运维工作，包括系统监控、性能优化和故障处理', 
+                    type: 'platform',
+                    permissions: [
+                        '查看数据看板',
+                        '查看数据源', '管理数据源', '配置数据连接',
+                        '查看数据模型',
+                        '执行数据查询', '查看查询历史',
+                        '查看任务调度', '管理任务调度', '监控任务执行',
+                        '查看数据质量报告', '配置质量监控',
+                        '查看用户行为日志', '管理系统配置', '查看系统监控'
+                    ], 
+                    isCore: true 
+                },
+                { 
+                    id: 'role_platform_audit', 
+                    name: '平台审计', 
+                    description: '负责平台的审计工作，可查看所有日志和监控数据，但无修改权限', 
+                    type: 'platform',
+                    permissions: [
+                        '查看数据看板',
+                        '查看数据源',
+                        '查看数据模型',
+                        '执行数据查询', '查看查询历史',
+                        '查看任务调度',
+                        '查看数据质量报告',
+                        '查看用户行为日志', '查看系统监控'
+                    ], 
+                    isCore: true 
+                },
+                { 
+                    id: 'role_platform_user', 
+                    name: '普通用户', 
+                    description: '基础平台用户，可查看平台基础信息和个人相关数据', 
+                    type: 'platform',
+                    permissions: [
+                        '查看数据看板',
+                        '查看数据源',
+                        '执行数据查询'
+                    ], 
+                    isCore: true 
+                },
+                
+                // 项目级角色
+                { 
+                    id: 'role_project_manager', 
+                    name: '项目管理员', 
+                    description: '管理分配的项目和项目内用户及权限，负责项目数据资源的分配和监控', 
+                    type: 'project',
+                    permissions: [
+                        '查看数据看板', '管理数据看板', '导出数据看板',
+                        '查看数据源', '管理数据源',
+                        '查看数据模型', '管理数据模型',
+                        '执行数据查询', '管理查询任务', '查看查询历史',
+                        '查看任务调度', '管理任务调度', '监控任务执行',
+                        '查看数据质量报告', '管理数据质量规则'
+                    ], 
+                    isCore: true 
+                },
+                { 
+                    id: 'role_project_developer', 
+                    name: '项目开发者', 
+                    description: '负责项目内数据开发，包括模型设计、ETL开发和数据处理', 
+                    type: 'project',
+                    permissions: [
+                        '查看数据看板',
+                        '查看数据源', '管理数据源', '配置数据连接',
+                        '查看数据模型', '管理数据模型', '发布数据模型',
+                        '执行数据查询', '管理查询任务', '查看查询历史',
+                        '查看任务调度', '管理任务调度', '监控任务执行',
+                        '查看数据质量报告', '管理数据质量规则'
+                    ],
+                    isCore: true
+                },
+                { 
+                    id: 'role_project_analyst', 
+                    name: '项目分析师', 
+                    description: '负责项目内业务数据分析，制作数据报表和看板，专注于业务洞察', 
+                    type: 'project',
+                    permissions: [
+                        '查看数据看板', '管理数据看板', '导出数据看板',
+                        '查看数据源',
+                        '查看数据模型',
+                        '执行数据查询', '查看查询历史',
+                        '查看任务调度',
+                        '查看数据质量报告'
+                    ],
+                    isCore: true
+                },
+                { 
+                    id: 'role_project_viewer', 
+                    name: '项目观察者', 
+                    description: '只能查看项目相关数据和报表，无任何修改权限，适合外部协作人员', 
+                    type: 'project',
+                    permissions: [
+                        '查看数据看板',
+                        '查看数据源',
+                        '查看数据模型',
+                        '执行数据查询',
+                        '查看查询历史',
+                        '查看数据质量报告'
+                    ], 
+                    isCore: true 
+                },
+                
+                // 示例自定义角色（非核心角色，可删除）
+                { 
+                    id: 'role_custom_data_scientist', 
+                    name: '数据科学家', 
+                    description: '专注于高级数据分析和机器学习模型开发的专业角色', 
+                    type: 'project',
+                    permissions: [
+                        '查看数据看板', '管理数据看板',
+                        '查看数据源', '管理数据源',
+                        '查看数据模型', '管理数据模型', '发布数据模型',
+                        '执行数据查询', '管理查询任务', '查看查询历史',
+                        '查看任务调度', '管理任务调度',
+                        '查看数据质量报告'
+                    ],
+                    isCore: false
+                },
+                { 
+                    id: 'role_custom_business_user', 
+                    name: '业务用户', 
+                    description: '主要使用数据看板和报表的业务部门用户，权限受限', 
+                    type: 'project',
+                    permissions: [
+                        '查看数据看板', '导出数据看板',
+                        '查看数据源',
+                        '执行数据查询',
+                        '查看数据质量报告'
+                    ],
+                    isCore: false
+                }
+            ];
+            if (!storedRoles && roles.length > 0) {
+                localStorage.setItem(LS_ROLES_KEY, JSON.stringify(roles));
+            }
+            renderRoles();
+        }
+
+        function renderRoles() {
+            if (!roleTableBody) return;
+            roleTableBody.innerHTML = '';
+            if (roles.length === 0) {
+                roleTableBody.innerHTML = `<tr><td colspan="6" class="empty-table-message">暂无角色数据</td></tr>`;
+                return;
+            }
+            roles.forEach(role => {
+                const isCoreRole = CORE_ROLE_IDS.includes(role.id) || role.isCore;
+                const deleteButtonDisabled = isCoreRole ? 'disabled title="核心角色不能删除"' : '';
+                const deleteButtonIcon = isCoreRole ? 'fa-ban' : 'fa-trash-alt';
+                
+                // Role type badge
+                const roleTypeDisplay = role.type === 'platform' ? 
+                    '<span style="background-color: #e6fffa; color: #234e52; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 500;">平台级</span>' :
+                    '<span style="background-color: #ebf4ff; color: #2a4365; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 500;">项目级</span>';
+
+                const rowHTML = `
+                    <tr>
+                        <td>${role.id}</td>
+                        <td>${role.name}</td>
+                        <td>${roleTypeDisplay}</td>
+                        <td>${role.description || '-'}</td>
+                        <td>${role.permissions ? role.permissions.length : 0}</td>
+                        <td class="action-buttons">
+                            <button data-edit-id="${role.id}"><i class="fas fa-edit"></i> 编辑</button>
+                            <button class="delete-button" data-delete-id="${role.id}" ${deleteButtonDisabled}>
+                                <i class="fas ${deleteButtonIcon}"></i> ${isCoreRole ? '' : '删除'}
+                            </button>
+                        </td>
+                    </tr>
+                `;
+                roleTableBody.insertAdjacentHTML('beforeend', rowHTML);
+            });
+        }
+
+        function openModal(isEdit = false, roleIdToEdit = null) {
+            if (!roleForm || !modalTitle) return;
+            roleForm.reset();
+            roleIdInput.value = '';
+            populatePermissionsGrid(); 
+
+            if (isEdit && roleIdToEdit) {
+                const role = roles.find(r => r.id === roleIdToEdit);
+                if (role) {
+                    modalTitle.textContent = '编辑角色';
+                    roleIdInput.value = role.id;
+                    roleNameInput.value = role.name;
+                    roleDescriptionInput.value = role.description;
+                    populatePermissionsGrid(role.permissions || []);
+                    if (CORE_ROLE_IDS.includes(role.id) || role.isCore) {
+                         roleNameInput.readOnly = true; // Prevent editing name of core roles
+                         permissionsGrid.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.disabled = true); // Prevent editing permissions of core roles for now
+                    } else {
+                        roleNameInput.readOnly = false;
+                        permissionsGrid.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.disabled = false);
+                    }
+                } else {
+                    alert('未找到角色!');
+                    return;
+                }
+            } else {
+                modalTitle.textContent = '新增角色';
+                roleNameInput.readOnly = false;
+                 permissionsGrid.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.disabled = false);
+            }
+            if(roleModal) roleModal.style.display = 'block';
+        }
+
+        function closeModal() {
+            if(roleModal) roleModal.style.display = 'none';
+        }
+
+        addRoleBtn.onclick = () => openModal(false);
+
+        roleTableBody.addEventListener('click', function(event) {
+            const editButton = event.target.closest('button[data-edit-id]');
+            const deleteButton = event.target.closest('button.delete-button[data-delete-id]');
+
+            if (editButton) {
+                openModal(true, editButton.dataset.editId);
+            }
+            if (deleteButton && !deleteButton.disabled) {
+                const roleIdToDelete = deleteButton.dataset.deleteId;
+                 if (CORE_ROLE_IDS.includes(roleIdToDelete) || roles.find(r=>r.id === roleIdToDelete && r.isCore)) {
+                    alert('核心角色不能删除。');
+                    return;
+                }
+                if (confirm('确定要删除此角色吗？')) {
+                    roles = roles.filter(r => r.id !== roleIdToDelete);
+                    saveAndRenderRoles();
+                }
+            }
+        });
+
+        const closeButton = roleModal.querySelector('button[data-close-rm-modal]');
+        if(closeButton) closeButton.onclick = closeModal;
+
+        const cancelButton = roleModal.querySelector('button[data-cancel-rm-modal]');
+        if(cancelButton) cancelButton.onclick = closeModal;
+
+        roleForm.onsubmit = function(event) {
+            event.preventDefault();
+            const id = roleIdInput.value;
+            const name = roleNameInput.value.trim();
+            const description = roleDescriptionInput.value.trim();
+            const selectedPermissions = Array.from(permissionsGrid.querySelectorAll('input[name="permissions"]:checked')).map(cb => cb.value);
+
+            if (!name) {
+                alert('角色名称不能为空！');
+                return;
+            }
+            
+            const existingRole = roles.find(r => r.name.toLowerCase() === name.toLowerCase() && r.id !== id);
+            if (existingRole) {
+                alert('角色名称已存在，请使用其他名称。');
+                return;
+            }
+
+            if (id) { // Edit mode
+                const roleIndex = roles.findIndex(r => r.id === id);
+                if (roleIndex > -1) {
+                    const originalRole = roles[roleIndex];
+                    if (CORE_ROLE_IDS.includes(originalRole.id) || originalRole.isCore) { // Core role restrictions
+                        roles[roleIndex] = { ...originalRole, description }; // Only allow description update for core roles
+                    } else {
+                        roles[roleIndex] = { ...originalRole, name, description, permissions: selectedPermissions };
+                    }
+                }
+            } else { // Add mode
+                const newRole = {
+                    id: 'role_' + new Date().getTime().toString().slice(-6) + Math.random().toString(36).substring(2, 5),
+                    name,
+                    description,
+                    permissions: selectedPermissions
+                };
+                roles.push(newRole);
+            }
+            saveAndRenderRoles();
+            closeModal();
+        };
+
+        function saveAndRenderRoles() {
+            localStorage.setItem(LS_ROLES_KEY, JSON.stringify(roles));
+            renderRoles();
+        }
+        
+        loadRoles();
+
+        if (roleTableBody) {
+            roleTableBody.dataset.initialized = 'true';
+        }
+    })();
+</script>
+</body>
+</html> 

@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>重置菜单数据</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            padding: 40px;
+            background-color: #f0f2f5;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .btn {
+            background-color: #007aff;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-right: 10px;
+        }
+        .btn:hover {
+            background-color: #005bb5;
+        }
+        .btn-danger {
+            background-color: #ff3b30;
+        }
+        .btn-danger:hover {
+            background-color: #d70015;
+        }
+        .info-box {
+            background-color: #f0f8ff;
+            border: 1px solid #b3d9ff;
+            padding: 20px;
+            border-radius: 6px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>菜单数据管理工具</h1>
+        
+        <div class="info-box">
+            <h3>💡 当前菜单样例包含：</h3>
+            <ul>
+                <li><strong>工作台</strong> - 系统首页</li>
+                <li><strong>权限管理</strong> - 用户管理、角色管理、权限配置、部门管理</li>
+                <li><strong>数据管理</strong> - 数据源管理、数据集管理、数据同步、数据质量、数据字典</li>
+                <li><strong>项目统筹</strong> - 项目列表、项目成员、项目配置、项目审批</li>
+                <li><strong>系统管理</strong> - 菜单管理、系统配置、操作日志、系统备份、定时任务</li>
+                <li><strong>监控中心</strong> - 系统监控、性能分析、使用统计、报表中心</li>
+            </ul>
+            <p><strong>总计：</strong>6个一级菜单 + 22个二级菜单 = 28个菜单项</p>
+        </div>
+        
+        <div style="margin: 30px 0;">
+            <button class="btn" onclick="resetMenuData()">🔄 重置为完整样例数据</button>
+            <button class="btn btn-danger" onclick="clearAllData()">🗑️ 清空所有菜单数据</button>
+        </div>
+        
+        <div id="message" style="margin-top: 20px; font-weight: bold;"></div>
+        
+        <div style="margin-top: 30px;">
+            <a href="menu_management.html" class="btn">📋 返回菜单管理</a>
+            <a href="index.html" class="btn">🏠 返回首页</a>
+        </div>
+    </div>
+
+    <script>
+        function resetMenuData() {
+            const defaultMenus = [
+                // 一级菜单
+                { id: 1, name: '工作台', path: 'dashboard.html', order: 1, hidden: false, parentId: null },
+                { id: 2, name: '权限管理', path: '', order: 2, hidden: false, parentId: null },
+                { id: 3, name: '数据管理', path: '', order: 3, hidden: false, parentId: null },
+                { id: 4, name: '项目统筹', path: '', order: 4, hidden: false, parentId: null },
+                { id: 5, name: '系统管理', path: '', order: 5, hidden: false, parentId: null },
+                { id: 6, name: '监控中心', path: '', order: 6, hidden: false, parentId: null },
+                
+                // 权限管理子菜单
+                { id: 7, name: '用户管理', path: 'user_management.html', order: 1, hidden: false, parentId: 2 },
+                { id: 8, name: '角色管理', path: 'role_management.html', order: 2, hidden: false, parentId: 2 },
+                { id: 9, name: '权限配置', path: 'permission_config.html', order: 3, hidden: false, parentId: 2 },
+                { id: 10, name: '部门管理', path: 'department_management.html', order: 4, hidden: false, parentId: 2 },
+                
+                // 数据管理子菜单
+                { id: 11, name: '数据源管理', path: 'data_source.html', order: 1, hidden: false, parentId: 3 },
+                { id: 12, name: '数据集管理', path: 'dataset_management.html', order: 2, hidden: false, parentId: 3 },
+                { id: 13, name: '数据同步', path: 'data_sync.html', order: 3, hidden: false, parentId: 3 },
+                { id: 14, name: '数据质量', path: 'data_quality.html', order: 4, hidden: false, parentId: 3 },
+                { id: 15, name: '数据字典', path: 'data_dictionary.html', order: 5, hidden: false, parentId: 3 },
+                
+                // 项目统筹子菜单
+                { id: 16, name: '项目列表', path: 'project_management.html', order: 1, hidden: false, parentId: 4 },
+                { id: 17, name: '项目成员', path: 'project_user_management.html', order: 2, hidden: false, parentId: 4 },
+                { id: 18, name: '项目配置', path: 'project_config.html', order: 3, hidden: false, parentId: 4 },
+                { id: 19, name: '项目审批', path: 'project_approval.html', order: 4, hidden: false, parentId: 4 },
+                
+                // 系统管理子菜单
+                { id: 20, name: '菜单管理', path: 'menu_management.html', order: 1, hidden: false, parentId: 5 },
+                { id: 21, name: '系统配置', path: 'system_config.html', order: 2, hidden: false, parentId: 5 },
+                { id: 22, name: '操作日志', path: 'operation_log.html', order: 3, hidden: false, parentId: 5 },
+                { id: 23, name: '系统备份', path: 'system_backup.html', order: 4, hidden: false, parentId: 5 },
+                { id: 24, name: '定时任务', path: 'scheduled_tasks.html', order: 5, hidden: false, parentId: 5 },
+                
+                // 监控中心子菜单
+                { id: 25, name: '系统监控', path: 'system_monitor.html', order: 1, hidden: false, parentId: 6 },
+                { id: 26, name: '性能分析', path: 'performance_analysis.html', order: 2, hidden: false, parentId: 6 },
+                { id: 27, name: '使用统计', path: 'usage_statistics.html', order: 3, hidden: false, parentId: 6 },
+                { id: 28, name: '报表中心', path: 'report_center.html', order: 4, hidden: false, parentId: 6 },
+            ];
+            
+            localStorage.setItem('dataPlatformMenus', JSON.stringify(defaultMenus));
+            showMessage('✅ 菜单数据已重置为完整样例数据！共28个菜单项。', 'success');
+        }
+
+        function clearAllData() {
+            if (confirm('⚠️ 确定要清空所有菜单数据吗？此操作不可恢复！')) {
+                localStorage.removeItem('dataPlatformMenus');
+                showMessage('🗑️ 所有菜单数据已清空！', 'warning');
+            }
+        }
+
+        function showMessage(text, type) {
+            const messageDiv = document.getElementById('message');
+            messageDiv.textContent = text;
+            messageDiv.style.color = type === 'success' ? '#28a745' : type === 'warning' ? '#dc3545' : '#007bff';
+            
+            setTimeout(() => {
+                messageDiv.textContent = '';
+            }, 3000);
+        }
+    </script>
+</body>
+</html> 

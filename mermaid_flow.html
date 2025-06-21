@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>数据平台流程图 - Mermaid实现</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10.6.1/dist/mermaid.min.js"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: #f5f7fa;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #2d3748;
+            margin-bottom: 20px;
+            font-size: 1.8rem;
+        }
+        .diagram-container {
+            width: 100%;
+            overflow-x: auto;
+            margin-bottom: 30px;
+        }
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .btn {
+            padding: 8px 16px;
+            background-color: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        .btn:hover {
+            background-color: #2563eb;
+            transform: translateY(-2px);
+        }
+        .legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #f8fafc;
+            border-radius: 6px;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 14px;
+        }
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+        }
+        .mermaid {
+            margin: 0 auto;
+        }
+        .steps-section {
+            margin-top: 30px;
+            background-color: #f8fafc;
+            border-radius: 8px;
+            padding: 20px;
+        }
+        .steps-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #2a4365;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 10px;
+        }
+        .step-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 10px;
+            background: rgba(255,255,255,0.8);
+            border-radius: 6px;
+            border: 1px solid #e2e8f0;
+            transition: all 0.3s ease;
+            margin-bottom: 10px;
+        }
+        .step-item:hover {
+            transform: translateX(4px);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border-color: #3b82f6;
+        }
+        .step-number {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+        .step-text {
+            font-size: 14px;
+            color: #4a5568;
+            line-height: 1.5;
+            flex-grow: 1;
+        }
+        #diagram-selector {
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>数据平台开发流程图</h1>
+        
+        <div class="controls">
+            <select id="diagram-selector" class="btn" onchange="changeDiagram()">
+                <option value="swimlane">泳道流程图</option>
+                <option value="flowchart">标准流程图</option>
+                <option value="sequence">时序图</option>
+            </select>
+            <button class="btn" onclick="downloadSVG()">导出为SVG</button>
+        </div>
+        
+        <div class="diagram-container">
+            <!-- 泳道流程图 -->
+            <div id="swimlane-diagram" class="mermaid">
+%%{init: {'theme': 'neutral', 'themeVariables': { 'primaryColor': '#3b82f6', 'primaryTextColor': '#fff', 'primaryBorderColor': '#2563eb', 'lineColor': '#3b82f6', 'secondaryColor': '#f1f5f9', 'tertiaryColor': '#f8fafc'}}}%%
+flowchart TB
+    subgraph 数据开发平台["数据开发平台"]
+        style 数据开发平台 fill:#3b82f6,color:#fff,stroke:#3b82f6
+        A1["1<br/>查看入湖台账"] --> A2["2<br/>入湖任务配置"]
+        A6["6<br/>出湖任务配置"]
+    end
+    
+    subgraph MRS集群["MRS集群"]
+        style MRS集群 fill:#4f46e5,color:#fff,stroke:#4f46e5
+        B3a["3<br/>查看组件包台账<br/>(Yarn)"] --- B3b["3<br/>入湖数据核验<br/>(HIVE)"]
+        B3b --> B4["4<br/>离线开发<br/>(HIVE)"]
+        B7["7<br/>代码发布<br/>(Gitee)"]
+    end
+    
+    subgraph DWS集群["DWS集群"]
+        style DWS集群 fill:#eab308,color:#fff,stroke:#eab308
+        C5["5<br/>离线开发<br/>(DWS)"]
+    end
+    
+    subgraph WS白鲸调度["WS白鲸调度"]
+        style WS白鲸调度 fill:#10b981,color:#fff,stroke:#10b981
+        D8["8<br/>配置调度任务"]
+    end
+    
+    %% 连接线
+    A2 --> B3b
+    B4 --> C5
+    C5 --> A6
+    A6 --> B7
+    B7 --> D8
+    
+    %% 节点样式
+    classDef processNode fill:#fff,stroke:#d1d5db,color:#333,rx:4,ry:4
+    class A1,A2,A6,B3a,B3b,B4,B7,C5,D8 processNode
+            </div>
+            
+            <!-- 标准流程图 -->
+            <div id="flowchart-diagram" class="mermaid" style="display:none">
+%%{init: {'theme': 'neutral', 'themeVariables': { 'primaryColor': '#3b82f6', 'primaryTextColor': '#fff', 'primaryBorderColor': '#2563eb', 'lineColor': '#3b82f6', 'secondaryColor': '#f1f5f9', 'tertiaryColor': '#f8fafc'}}}%%
+flowchart LR
+    A1["1<br/>查看入湖台账"] --> A2["2<br/>入湖任务配置"]
+    A2 --> B3["3<br/>入湖数据核验<br/>(HIVE)"]
+    B3 <--> B3a["3<br/>查看组件包台账<br/>(Yarn)"]
+    B3 --> B4["4<br/>离线开发<br/>(HIVE)"]
+    B4 --> C5["5<br/>离线开发<br/>(DWS)"]
+    C5 --> A6["6<br/>出湖任务配置"]
+    A6 --> B7["7<br/>代码发布<br/>(Gitee)"]
+    B7 --> D8["8<br/>配置调度任务"]
+    
+    %% 系统分组
+    A1 & A2 & A6:::dataPlat
+    B3 & B3a & B4 & B7:::mrs
+    C5:::dws
+    D8:::ws
+    
+    %% 节点样式
+    classDef dataPlat fill:#fff,stroke:#3b82f6,color:#333,rx:4,ry:4
+    classDef mrs fill:#fff,stroke:#4f46e5,color:#333,rx:4,ry:4
+    classDef dws fill:#fff,stroke:#eab308,color:#333,rx:4,ry:4
+    classDef ws fill:#fff,stroke:#10b981,color:#333,rx:4,ry:4
+            </div>
+            
+            <!-- 时序图 -->
+            <div id="sequence-diagram" class="mermaid" style="display:none">
+%%{init: {'theme': 'neutral', 'themeVariables': { 'primaryColor': '#3b82f6', 'primaryTextColor': '#fff', 'primaryBorderColor': '#2563eb', 'lineColor': '#3b82f6', 'secondaryColor': '#f1f5f9', 'tertiaryColor': '#f8fafc'}}}%%
+sequenceDiagram
+    participant 数据开发平台
+    participant MRS集群
+    participant DWS集群
+    participant WS白鲸调度
+    
+    Note over 数据开发平台: 1. 查看入湖台账
+    Note over 数据开发平台: 2. 入湖任务配置
+    数据开发平台->>MRS集群: 配置入湖任务
+    Note over MRS集群: 3. 入湖数据核验(HIVE)
+    MRS集群->>MRS集群: 3. 查看组件包台账(Yarn)
+    Note over MRS集群: 4. 离线开发(HIVE)
+    MRS集群->>DWS集群: 数据传输
+    Note over DWS集群: 5. 离线开发(DWS)
+    DWS集群->>数据开发平台: 数据处理完成
+    Note over 数据开发平台: 6. 出湖任务配置
+    数据开发平台->>MRS集群: 配置出湖任务
+    Note over MRS集群: 7. 代码发布(Gitee)
+    MRS集群->>WS白鲸调度: 发布代码
+    Note over WS白鲸调度: 8. 配置调度任务
+            </div>
+        </div>
+        
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #3b82f6;"></div>
+                <span>数据开发平台</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #4f46e5;"></div>
+                <span>MRS集群</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #10b981;"></div>
+                <span>WS白鲸调度</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #eab308;"></div>
+                <span>DWS集群</span>
+            </div>
+        </div>
+        
+        <div class="steps-section">
+            <h3 class="steps-title">小李整个工作流程梳理</h3>
+            <div class="steps-content">
+                <div class="step-item">
+                    <span class="step-number">1</span>
+                    <span class="step-text">查看入湖台账报表中，是否需要入湖的表已经有对应的任务生成</span>
+                </div>
+                <div class="step-item">
+                    <span class="step-number">2</span>
+                    <span class="step-text">如果没有的话，需要创建入湖任务，拿到job1d1，以及对应的表名1</span>
+                </div>
+                <div class="step-item">
+                    <span class="step-number">3</span>
+                    <span class="step-text">在hue上查看查询入湖到MRS里对应的表</span>
+                </div>
+                <div class="step-item">
+                    <span class="step-number">4</span>
+                    <span class="step-text">在MRS上进行作业开发，完成数据ETL工作</span>
+                </div>
+                <div class="step-item">
+                    <span class="step-number">5</span>
+                    <span class="step-text">在DWS上进行作业开发，完成数据ETL工作</span>
+                </div>
+                <div class="step-item">
+                    <span class="step-number">6</span>
+                    <span class="step-text">在数据交换功能中进行出湖任务备配置job1d2，以及对应的表名2</span>
+                </div>
+                <div class="step-item">
+                    <span class="step-number">7</span>
+                    <span class="step-text">在代码管理平台gitee上完成各版及流水线配置</span>
+                </div>
+                <div class="step-item">
+                    <span class="step-number">8</span>
+                    <span class="step-text">在WS调度系统上基于job进行调度任务的配置，起调度</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 初始化Mermaid
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: 'neutral',
+            securityLevel: 'loose',
+            fontFamily: 'PingFang SC, Microsoft YaHei, sans-serif'
+        });
+        
+        // 切换图表类型
+        function changeDiagram() {
+            const selector = document.getElementById('diagram-selector');
+            const selectedValue = selector.value;
+            
+            // 隐藏所有图表
+            document.getElementById('swimlane-diagram').style.display = 'none';
+            document.getElementById('flowchart-diagram').style.display = 'none';
+            document.getElementById('sequence-diagram').style.display = 'none';
+            
+            // 显示选中的图表
+            document.getElementById(selectedValue + '-diagram').style.display = 'block';
+        }
+        
+        // 下载SVG
+        function downloadSVG() {
+            const selector = document.getElementById('diagram-selector');
+            const selectedValue = selector.value;
+            const diagramId = selectedValue + '-diagram';
+            
+            // 获取SVG元素
+            const svgElement = document.getElementById(diagramId).querySelector('svg');
+            
+            if (svgElement) {
+                // 创建SVG数据
+                const svgData = new XMLSerializer().serializeToString(svgElement);
+                const svgBlob = new Blob([svgData], {type: 'image/svg+xml;charset=utf-8'});
+                const svgUrl = URL.createObjectURL(svgBlob);
+                
+                // 创建下载链接
+                const downloadLink = document.createElement('a');
+                downloadLink.href = svgUrl;
+                downloadLink.download = '数据平台开发流程图_' + selectedValue + '.svg';
+                document.body.appendChild(downloadLink);
+                downloadLink.click();
+                document.body.removeChild(downloadLink);
+            } else {
+                alert('无法获取SVG元素，请稍后再试');
+            }
+        }
+        
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 默认显示泳道图
+            changeDiagram();
+        });
+    </script>
+</body>
+</html> 

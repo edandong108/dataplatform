@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>权限体系测试 - 数据平台权限管理</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: #f0f2f5;
+            color: #333;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .section {
+            background: white;
+            margin-bottom: 20px;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .section h2 {
+            color: #2D3748;
+            margin-bottom: 16px;
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+        .role-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            margin: 2px;
+        }
+        .platform-role {
+            background-color: #E6FFFA;
+            color: #234E52;
+        }
+        .project-role {
+            background-color: #EBF4FF;
+            color: #2A4365;
+        }
+        .user-card {
+            border: 1px solid #E2E8F0;
+            border-radius: 6px;
+            padding: 12px;
+            margin-bottom: 12px;
+        }
+        .user-name {
+            font-weight: 600;
+            color: #2D3748;
+        }
+        .user-email {
+            color: #718096;
+            font-size: 0.875rem;
+        }
+        .permissions-list {
+            margin-top: 8px;
+        }
+        .permission-item {
+            background-color: #F7FAFC;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            margin: 1px;
+            display: inline-block;
+        }
+        .back-button {
+            background-color: #3182CE;
+            color: white;
+            padding: 10px 18px;
+            border: none;
+            border-radius: 6px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .back-button:hover {
+            background-color: #2B6CB0;
+        }
+        .back-button i {
+            margin-right: 8px;
+        }
+        .role-platform-admin {
+            background-color: #FED7E2;
+            color: #97266D;
+        }
+        .role-platform-ops {
+            background-color: #D6F5D6;
+            color: #22543D;
+        }
+        .role-platform-audit {
+            background-color: #BEE3F8;
+            color: #2A4365;
+        }
+        .role-platform-user {
+            background-color: #E6FFFA;
+            color: #234E52;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="index.html" class="back-button">
+            <i class="fas fa-arrow-left"></i> 返回主页
+        </a>
+        
+        <h1 style="color: #2D3748; margin-bottom: 24px; font-size: 1.5rem; font-weight: 600;">双权限体系测试页面</h1>
+        
+        <div class="section">
+            <h2><i class="fas fa-shield-alt"></i> 平台级角色</h2>
+            <div id="platformRoles"></div>
+        </div>
+        
+        <div class="section">
+            <h2><i class="fas fa-project-diagram"></i> 项目级角色</h2>
+            <div id="projectRoles"></div>
+        </div>
+        
+        <div class="section">
+            <h2><i class="fas fa-users"></i> 用户权限分配情况</h2>
+            <div id="userPermissions"></div>
+        </div>
+        
+        <div class="section">
+            <h2><i class="fas fa-folder-open"></i> 项目用户分配情况</h2>
+            <div id="projectAssignments"></div>
+        </div>
+    </div>
+
+    <script>
+        const LS_USERS_KEY = 'dataPlatformUsers';
+        const LS_ROLES_KEY = 'dataPlatformRoles';
+        const LS_PROJECTS_KEY = 'dataPlatformProjects';
+        const LS_ASSIGNMENTS_KEY = 'dataPlatformProjectUserAssignments';
+
+        function loadData() {
+            const users = JSON.parse(localStorage.getItem(LS_USERS_KEY) || '[]');
+            const roles = JSON.parse(localStorage.getItem(LS_ROLES_KEY) || '[]');
+            const projects = JSON.parse(localStorage.getItem(LS_PROJECTS_KEY) || '[]');
+            const assignments = JSON.parse(localStorage.getItem(LS_ASSIGNMENTS_KEY) || '[]');
+
+            return { users, roles, projects, assignments };
+        }
+
+        function getRoleName(roleId, roles) {
+            const role = roles.find(r => r.id === roleId);
+            return role ? role.name : roleId;
+        }
+
+        function renderPlatformRoles() {
+            const { roles } = loadData();
+            const platformRoles = roles.filter(r => r.type === 'platform');
+            
+            const container = document.getElementById('platformRoles');
+            container.innerHTML = '';
+            
+            if (platformRoles.length === 0) {
+                container.innerHTML = '<p>暂无平台级角色</p>';
+                return;
+            }
+            
+            platformRoles.forEach(role => {
+                const roleDiv = document.createElement('div');
+                roleDiv.className = 'user-card';
+                roleDiv.innerHTML = `
+                    <div class="user-name">${role.name} <span class="role-badge platform-role">平台级</span></div>
+                    <div class="user-email">${role.description}</div>
+                    <div class="permissions-list">
+                        ${role.permissions ? role.permissions.map(p => `<span class="permission-item">${p}</span>`).join('') : ''}
+                    </div>
+                `;
+                container.appendChild(roleDiv);
+            });
+        }
+
+        function renderProjectRoles() {
+            const { roles } = loadData();
+            const projectRoles = roles.filter(r => r.type === 'project');
+            
+            const container = document.getElementById('projectRoles');
+            container.innerHTML = '';
+            
+            if (projectRoles.length === 0) {
+                container.innerHTML = '<p>暂无项目级角色</p>';
+                return;
+            }
+            
+            projectRoles.forEach(role => {
+                const roleDiv = document.createElement('div');
+                roleDiv.className = 'user-card';
+                roleDiv.innerHTML = `
+                    <div class="user-name">${role.name} <span class="role-badge project-role">项目级</span></div>
+                    <div class="user-email">${role.description}</div>
+                    <div class="permissions-list">
+                        ${role.permissions ? role.permissions.map(p => `<span class="permission-item">${p}</span>`).join('') : ''}
+                    </div>
+                `;
+                container.appendChild(roleDiv);
+            });
+        }
+
+        function renderUserPermissions() {
+            const { users, roles } = loadData();
+            
+            const container = document.getElementById('userPermissions');
+            container.innerHTML = '';
+            
+            if (users.length === 0) {
+                container.innerHTML = '<p>暂无用户数据</p>';
+                return;
+            }
+            
+            users.forEach(user => {
+                const platformRole = roles.find(r => r.id === user.platformRole);
+                const roleBadgeClass = user.platformRole ? user.platformRole.replace('role_', 'role-').replace('_', '-') : 'role-platform-user';
+                
+                const userDiv = document.createElement('div');
+                userDiv.className = 'user-card';
+                userDiv.innerHTML = `
+                    <div class="user-name">${user.username}</div>
+                    <div class="user-email">${user.email}</div>
+                    <div style="margin-top: 8px;">
+                        <strong>平台角色:</strong> 
+                        ${platformRole ? 
+                            `<span class="role-badge ${roleBadgeClass}">${platformRole.name}</span>` : 
+                            '<span style="color: #718096;">无平台角色</span>'
+                        }
+                    </div>
+                    ${platformRole ? `
+                        <div class="permissions-list">
+                            <strong>平台权限:</strong><br>
+                            ${platformRole.permissions.map(p => `<span class="permission-item">${p}</span>`).join('')}
+                        </div>
+                    ` : ''}
+                `;
+                container.appendChild(userDiv);
+            });
+        }
+
+        function renderProjectAssignments() {
+            const { users, roles, projects, assignments } = loadData();
+            
+            const container = document.getElementById('projectAssignments');
+            container.innerHTML = '';
+            
+            if (projects.length === 0) {
+                container.innerHTML = '<p>暂无项目数据</p>';
+                return;
+            }
+            
+            projects.forEach(project => {
+                const projectAssignments = assignments.filter(a => a.projectId === project.id);
+                const projectDiv = document.createElement('div');
+                projectDiv.className = 'user-card';
+                
+                let assignmentsHtml = '';
+                if (projectAssignments.length > 0) {
+                    assignmentsHtml = projectAssignments.map(assignment => {
+                        const user = users.find(u => u.id === assignment.userId);
+                        const role = roles.find(r => r.id === assignment.roleId);
+                        return `
+                            <div style="margin: 8px 0; padding: 8px; background-color: #F7FAFC; border-radius: 4px;">
+                                <strong>${user ? user.username : assignment.userId}</strong> - 
+                                <span class="role-badge project-role">${role ? role.name : assignment.roleId}</span>
+                            </div>
+                        `;
+                    }).join('');
+                } else {
+                    assignmentsHtml = '<div style="color: #718096; font-style: italic;">暂无用户分配</div>';
+                }
+                
+                projectDiv.innerHTML = `
+                    <div class="user-name">${project.name}</div>
+                    <div class="user-email">${project.description}</div>
+                    <div style="margin-top: 12px;">
+                        <strong>分配的用户:</strong>
+                        ${assignmentsHtml}
+                    </div>
+                `;
+                container.appendChild(projectDiv);
+            });
+        }
+
+        // 初始化页面
+        document.addEventListener('DOMContentLoaded', function() {
+            renderPlatformRoles();
+            renderProjectRoles();
+            renderUserPermissions();
+            renderProjectAssignments();
+        });
+    </script>
+</body>
+</html> 

@@ -1,0 +1,1786 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>项目管理 - 数据平台权限管理</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: #f0f2f5;
+            color: #333;
+        }
+        .app-container {
+            max-width: none;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .content-area {
+            padding: 0;
+            flex-grow: 1;
+        }
+        .table-container {
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            overflow: hidden; /* To clip inner table borders */
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 12px 16px;
+            text-align: left;
+            border-bottom: 1px solid #e5e5e5; /* Lighter border for table rows */
+            font-size: 0.9375rem; /* 15px */
+        }
+        th {
+            background-color: #f7f7f7; /* Slightly off-white for table headers */
+            font-weight: 500;
+            color: #333;
+        }
+        td {
+            color: #555;
+        }
+        tr:last-child td {
+            border-bottom: none;
+        }
+        .action-buttons button, .action-buttons a {
+            color: #007aff;
+            background: none;
+            border: none;
+            padding: 6px 8px;
+            margin-right: 8px;
+            cursor: pointer;
+            font-size: 0.875rem; /* 14px */
+            border-radius: 6px;
+            transition: background-color 0.2s ease;
+        }
+        .action-buttons button:hover, .action-buttons a:hover {
+            background-color: #e7f3ff; /* Light blue on hover */
+        }
+        .action-buttons .delete-button {
+            color: #ff3b30; /* iOS red for delete */
+        }
+        .action-buttons .delete-button:hover {
+            background-color: #ffebee; /* Light red on hover */
+        }
+        .add-button {
+            background-color: #007aff;
+            color: white;
+            padding: 10px 18px;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.9375rem;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            margin-bottom: 20px;
+            display: inline-flex;
+            align-items: center;
+        }
+        .add-button i {
+            margin-right: 8px;
+        }
+        .add-button:hover {
+            background-color: #005bb5;
+        }
+        /* Modal styles */
+        .modal {
+            display: none; /* Hidden by default */
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 10% auto;
+            padding: 24px;
+            border: 1px solid #d1d1d6;
+            width: 90%;
+            max-width: 500px;
+            border-radius: 14px; /* iOS modal style */
+            box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .modal-header h2 {
+            font-size: 1.125rem;
+            font-weight: 600;
+        }
+        .close-button {
+            color: #aaa;
+            font-size: 24px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .close-button:hover,
+        .close-button:focus {
+            color: black;
+        }
+        .form-group {
+            margin-bottom: 16px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 0.875rem;
+            color: #333;
+            font-weight: 500;
+        }
+        .form-group input[type="text"], .form-group textarea, .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #d1d1d6;
+            border-radius: 8px;
+            font-size: 0.9375rem;
+            box-sizing: border-box;
+        }
+        .form-group textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+        .form-actions {
+            text-align: right;
+            margin-top: 24px;
+        }
+        .form-actions button {
+            padding: 10px 18px;
+            border-radius: 8px;
+            font-size: 0.9375rem;
+            cursor: pointer;
+            border: none;
+            margin-left: 10px;
+        }
+        .form-actions .save-button {
+            background-color: #007aff;
+            color: white;
+        }
+        .form-actions .cancel-button {
+            background-color: #e5e5e5;
+            color: #333;
+        }
+        /* Tech Blue Theme Styles for project_management.html */
+        #mainContentPortal .content-area {
+            padding: 20px;
+            flex-grow: 1;
+        }
+
+        #mainContentPortal .table-container {
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+            border: 1px solid #CBD5E0; /* Tech Blue: Light border */
+        }
+
+        #mainContentPortal table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        #mainContentPortal th, #mainContentPortal td {
+            padding: 12px 16px;
+            text-align: left;
+            border-bottom: 1px solid #E2E8F0; /* Tech Blue: Lighter row border */
+            font-size: 0.9375rem;
+        }
+
+        #mainContentPortal th {
+            background-color: #F7FAFC; /* Tech Blue: Very light header bg */
+            font-weight: 600;
+            color: #2D3748; /* Tech Blue: Dark header text */
+            text-transform: uppercase;
+            font-size: 0.875rem;
+        }
+
+        #mainContentPortal td {
+            color: #4A5568; /* Tech Blue: Medium gray text */
+        }
+
+        #mainContentPortal tr:last-child td {
+            border-bottom: none;
+        }
+
+        #mainContentPortal .action-buttons button, 
+        #mainContentPortal .action-buttons a {
+            color: #3182CE; /* Tech Blue: Primary action blue */
+            background: none;
+            border: 1px solid transparent;
+            padding: 6px 10px;
+            margin-right: 8px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+        }
+        #mainContentPortal .action-buttons button i,
+        #mainContentPortal .action-buttons a i {
+            margin-right: 4px;
+        }
+
+        #mainContentPortal .action-buttons button:hover, 
+        #mainContentPortal .action-buttons a:hover {
+            background-color: #EBF8FF; /* Tech Blue: Light blue hover bg */
+            border-color: #90CDF4; /* Tech Blue: Lighter blue border */
+            color: #2B6CB0; /* Tech Blue: Darker blue text on hover */
+        }
+
+        #mainContentPortal .action-buttons .delete-button {
+            color: #E53E3E; /* Tech Blue: Red for delete */
+        }
+
+        #mainContentPortal .action-buttons .delete-button:hover {
+            background-color: #FFF5F5; /* Tech Blue: Light red hover bg */
+            border-color: #FEB2B2; /* Tech Blue: Lighter red border */
+            color: #C53030; /* Tech Blue: Darker red on hover */
+        }
+
+        #mainContentPortal .add-button {
+            background-color: #3182CE; /* Tech Blue: Primary blue */
+            color: white;
+            padding: 10px 18px;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.9375rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            margin-bottom: 20px;
+            display: inline-flex;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        #mainContentPortal .add-button i {
+            margin-right: 8px;
+        }
+        #mainContentPortal .add-button:hover {
+            background-color: #2B6CB0; /* Tech Blue: Darker blue on hover */
+        }
+
+        /* Modal styles using the specific class for this module's modal */
+        .project-modal-styling.modal { 
+            display: none;
+            position: fixed;
+            z-index: 1050;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .project-modal-styling .modal-content {
+            background-color: #ffffff;
+            margin: 8% auto;
+            padding: 24px;
+            border: 1px solid #E2E8F0;
+            width: 90%;
+            max-width: 500px;
+            border-radius: 8px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1), 0 5px 10px rgba(0,0,0,0.04);
+        }
+
+        .project-modal-styling .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #E2E8F0;
+        }
+
+        .project-modal-styling .modal-header h2 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #2A4365; /* Tech Blue: Dark blue modal title */
+        }
+
+        .project-modal-styling .close-button {
+            color: #718096;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            background: none;
+            border: none;
+            padding: 0 4px;
+            line-height: 1;
+        }
+        .project-modal-styling .close-button:hover {
+            color: #2D3748;
+        }
+
+        .project-modal-styling .form-group {
+            margin-bottom: 16px;
+        }
+
+        .project-modal-styling .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 0.875rem;
+            color: #4A5568; /* Tech Blue: Form label */
+            font-weight: 500;
+        }
+
+        .project-modal-styling .form-group input[type="text"], 
+        .project-modal-styling .form-group textarea, 
+        .project-modal-styling .form-group select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #CBD5E0; /* Tech Blue: Input border */
+            border-radius: 6px;
+            font-size: 0.9375rem;
+            box-sizing: border-box;
+            background-color: #FFFFFF;
+            color: #2D3748;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+        .project-modal-styling .form-group input[type="text"]:focus, 
+        .project-modal-styling .form-group textarea:focus, 
+        .project-modal-styling .form-group select:focus {
+            border-color: #3182CE; /* Tech Blue: Focus border */
+            box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.2); /* Tech Blue: Focus shadow */
+            outline: none;
+        }
+
+        .project-modal-styling .form-group textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+
+        .project-modal-styling .form-actions {
+            text-align: right;
+            margin-top: 24px;
+            padding-top: 16px;
+            border-top: 1px solid #E2E8F0;
+        }
+
+        .project-modal-styling .form-actions button {
+            padding: 10px 18px;
+            border-radius: 6px;
+            font-size: 0.9375rem;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            margin-left: 10px;
+            transition: background-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .project-modal-styling .form-actions .save-button {
+            background-color: #3182CE; /* Tech Blue: Primary blue button */
+            color: white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .project-modal-styling .form-actions .save-button:hover {
+            background-color: #2B6CB0; /* Tech Blue: Darker blue */
+            box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+        }
+
+        .project-modal-styling .form-actions .cancel-button {
+            background-color: #E2E8F0; /* Tech Blue: Light gray cancel */
+            color: #4A5568;
+            border: 1px solid #CBD5E0;
+        }
+        .project-modal-styling .form-actions .cancel-button:hover {
+            background-color: #CBD5E0;
+            border-color: #A0AEC0;
+        }
+        #mainContentPortal .empty-table-message {
+            text-align: center;
+            padding: 32px 16px;
+            font-size: 1rem;
+            color: #718096; /* Tech Blue: Muted text */
+        }
+
+        /* Data Resource Modal Styles */
+        .data-resource-modal-styling.modal {
+            display: none;
+            position: fixed;
+            z-index: 1060;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .data-resource-modal-styling .modal-content {
+            background-color: #ffffff;
+            margin: 5% auto;
+            padding: 0;
+            border: 1px solid #E2E8F0;
+            width: 90%;
+            max-width: 800px;
+            border-radius: 8px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1), 0 5px 10px rgba(0,0,0,0.04);
+        }
+
+        .data-resource-modal-styling .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 24px;
+            border-bottom: 1px solid #E2E8F0;
+        }
+
+        .data-resource-modal-styling .modal-header h2 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #2A4365;
+        }
+
+        .data-resource-modal-styling .close-button {
+            color: #718096;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            background: none;
+            border: none;
+            padding: 0 4px;
+            line-height: 1;
+        }
+        .data-resource-modal-styling .close-button:hover {
+            color: #2D3748;
+        }
+
+        /* Tab Styles */
+        .tabs-container {
+            border-bottom: 1px solid #E2E8F0;
+        }
+
+        .tabs-nav {
+            display: flex;
+            background-color: #F7FAFC;
+        }
+
+        .tab-button {
+            padding: 12px 24px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 0.9375rem;
+            font-weight: 500;
+            color: #4A5568;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s ease;
+        }
+
+        .tab-button:hover {
+            background-color: #EDF2F7;
+        }
+
+        .tab-button.active {
+            color: #3182CE;
+            border-bottom-color: #3182CE;
+            background-color: #ffffff;
+        }
+
+        .tab-content {
+            padding: 24px;
+            min-height: 400px;
+        }
+
+        .tab-panel {
+            display: none;
+        }
+
+        .tab-panel.active {
+            display: block;
+        }
+
+        /* Resource List Styles */
+        .resource-category {
+            margin-bottom: 24px;
+        }
+
+        .resource-category h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #2D3748;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #E2E8F0;
+        }
+
+        .resource-list {
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid #E2E8F0;
+            border-radius: 6px;
+            background-color: #ffffff;
+        }
+
+        .resource-list::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .resource-list::-webkit-scrollbar-track {
+            background: #F7FAFC;
+            border-radius: 4px;
+        }
+
+        .resource-list::-webkit-scrollbar-thumb {
+            background: #CBD5E0;
+            border-radius: 4px;
+        }
+
+        .resource-list::-webkit-scrollbar-thumb:hover {
+            background: #A0AEC0;
+        }
+
+        .resource-item {
+            display: flex;
+            align-items: center;
+            padding: 8px 12px;
+            border-bottom: 1px solid #F1F5F9;
+            transition: background-color 0.2s ease;
+            cursor: pointer;
+        }
+
+        .resource-item:last-child {
+            border-bottom: none;
+        }
+
+        .resource-item:hover {
+            background-color: #F8FAFC;
+        }
+
+        .resource-item.selected {
+            background-color: #EBF8FF;
+        }
+
+        .resource-item input[type="checkbox"] {
+            margin-right: 12px;
+            width: 16px;
+            height: 16px;
+            accent-color: #3182CE;
+        }
+
+        .resource-info {
+            flex-grow: 1;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .resource-name {
+            font-weight: 500;
+            color: #2D3748;
+            font-size: 0.9375rem;
+        }
+
+        .resource-company {
+            font-size: 0.8125rem;
+            color: #6B7280;
+            background-color: #F3F4F6;
+            padding: 2px 8px;
+            border-radius: 12px;
+        }
+
+
+
+        .modal-footer {
+            padding: 16px 24px;
+            border-top: 1px solid #E2E8F0;
+            text-align: right;
+            background-color: #F7FAFC;
+        }
+
+        .modal-footer button {
+            padding: 10px 18px;
+            border-radius: 6px;
+            font-size: 0.9375rem;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            margin-left: 10px;
+            transition: background-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .modal-footer .save-button {
+            background-color: #3182CE;
+            color: white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .modal-footer .save-button:hover {
+            background-color: #2B6CB0;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+        }
+
+        .modal-footer .cancel-button {
+            background-color: #E2E8F0;
+            color: #4A5568;
+            border: 1px solid #CBD5E0;
+        }
+        .modal-footer .cancel-button:hover {
+            background-color: #CBD5E0;
+            border-color: #A0AEC0;
+        }
+
+        /* Filter Styles */
+        .filter-container {
+            padding: 16px 24px;
+            border-bottom: 1px solid #E2E8F0;
+            background-color: #F9FAFB;
+        }
+
+        .filter-row {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .filter-group label {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #374151;
+            white-space: nowrap;
+        }
+
+        .filter-input {
+            padding: 6px 12px;
+            border: 1px solid #D1D5DB;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            min-width: 160px;
+        }
+
+        .filter-input:focus {
+            border-color: #3182CE;
+            box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.2);
+            outline: none;
+        }
+
+        .clear-filter-btn {
+            padding: 6px 12px;
+            background-color: #6B7280;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        .clear-filter-btn:hover {
+            background-color: #4B5563;
+        }
+
+        .resource-item.hidden {
+            display: none;
+        }
+
+        /* 资源类型颜色标识 */
+        .resource-tag {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 11px;
+            font-weight: 500;
+            margin-right: 4px;
+            color: white;
+        }
+
+        .resource-tag.datasource {
+            background-color: #1890ff; /* 蓝色 - 数据源连接资源 */
+        }
+
+        .resource-tag.datalake {
+            background-color: #52c41a; /* 绿色 - 数据湖库资源 */
+        }
+
+        .resource-name-with-tag {
+            display: inline-flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 2px;
+        }
+
+        .resource-cell {
+            max-width: 300px;
+            line-height: 1.5;
+        }
+
+        .resource-cell .resource-name-with-tag {
+            margin-bottom: 2px;
+            margin-right: 8px;
+        }
+
+        /* 资源色卡样式 */
+        .resource-cards {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            align-items: center;
+        }
+
+        .resource-card {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+            color: white;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            user-select: none;
+        }
+
+        .resource-card:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+
+        .resource-card.datasource {
+            background-color: #1890ff;
+        }
+
+        .resource-card.datasource:hover {
+            background-color: #1677d0;
+        }
+
+        .resource-card.datalake {
+            background-color: #52c41a;
+        }
+
+        .resource-card.datalake:hover {
+            background-color: #43a616;
+        }
+
+        /* 资源详情浮窗 */
+        .resource-tooltip {
+            position: absolute;
+            background: white;
+            border: 1px solid #d9d9d9;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            padding: 12px;
+            min-width: 200px;
+            max-width: 400px;
+            z-index: 10000;
+            display: none;
+        }
+
+        .resource-tooltip-header {
+            font-size: 14px;
+            font-weight: 600;
+            color: #1c1c1c;
+            margin-bottom: 8px;
+            padding-bottom: 6px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .resource-tooltip-list {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .resource-tooltip-item {
+            padding: 4px 0;
+            font-size: 13px;
+            color: #595959;
+            border-bottom: 1px solid #fafafa;
+        }
+
+        .resource-tooltip-item:last-child {
+            border-bottom: none;
+        }
+
+        .resource-tooltip-item .resource-name {
+            font-weight: 500;
+            color: #262626;
+        }
+
+        .resource-tooltip-item .resource-company {
+            font-size: 11px;
+            color: #8c8c8c;
+            margin-left: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <main class="content-area">
+            <button id="pm_addProjectBtn" class="add-button">
+                <i class="fas fa-plus"></i> 新增项目
+            </button>
+
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>项目ID</th>
+                            <th>项目名称</th>
+                            <th>描述</th>
+                            <th>数据资源</th>
+                            <th>项目管理员</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="pm_projectTableBody">
+                        <!-- Populated by JS -->
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <div id="pm_projectModal" class="modal project-modal-styling">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="pm_modalTitle">新增项目</h2>
+                <button type="button" class="close-button" data-close-pm-modal>&times;</button>
+            </div>
+            <form id="pm_projectForm">
+                <input type="hidden" id="pm_projectId">
+                <div class="form-group">
+                    <label for="pm_projectName">项目名称:</label>
+                    <input type="text" id="pm_projectName" name="projectName" required>
+                </div>
+                <div class="form-group">
+                    <label for="pm_projectDescription">项目描述:</label>
+                    <textarea id="pm_projectDescription" name="projectDescription"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="pm_projectAdmin">项目管理员:</label>
+                    <select id="pm_projectAdmin" name="projectAdmin">
+                        <!-- Populated by JS -->
+                    </select>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="cancel-button" data-cancel-pm-modal>取消</button>
+                    <button type="submit" class="save-button">保存</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Data Resource Modal -->
+    <div id="pm_dataResourceModal" class="modal data-resource-modal-styling">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="pm_dataResourceModalTitle">数据资源管理</h2>
+                <button type="button" class="close-button" data-close-data-resource-modal>&times;</button>
+            </div>
+            
+            <div class="tabs-container">
+                <div class="tabs-nav">
+                    <button class="tab-button active" data-tab="datasource">数据源连接资源</button>
+                    <button class="tab-button" data-tab="schema">数据湖库资源</button>
+                </div>
+            </div>
+
+            <!-- Filter Container for Data Sources -->
+            <div class="filter-container" id="datasource-filter-container">
+                <div class="filter-row">
+                    <div class="filter-group">
+                        <label for="company-filter">归属公司:</label>
+                        <select id="company-filter" class="filter-input">
+                            <option value="">全部公司</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="system-filter">数据源名称:</label>
+                        <input type="text" id="system-filter" class="filter-input" placeholder="输入数据源名称筛选...">
+                    </div>
+                    <button id="clear-filters" class="clear-filter-btn">清除筛选</button>
+                </div>
+            </div>
+
+            <!-- Filter Container for Hive Resources -->
+            <div class="filter-container" id="hive-filter-container" style="display: none;">
+                <div class="filter-row">
+                    <div class="filter-group">
+                        <label for="hive-company-filter">归属公司:</label>
+                        <select id="hive-company-filter" class="filter-input">
+                            <option value="">全部公司</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="hive-name-filter">数据资源名称:</label>
+                        <input type="text" id="hive-name-filter" class="filter-input" placeholder="输入数据资源名称筛选...">
+                    </div>
+                    <button id="clear-hive-filters" class="clear-filter-btn">清除筛选</button>
+                </div>
+            </div>
+
+            <div class="tab-content">
+                <!-- 数据源连接资源 Tab -->
+                <div id="datasource-panel" class="tab-panel active">
+                    <div class="resource-category">
+                        <h3>业务系统数据源</h3>
+                        <div class="resource-list" id="business-datasources">
+                            <!-- Will be populated by JS -->
+                        </div>
+                    </div>
+                    
+                    <div class="resource-category">
+                        <h3>SFTP数据传输</h3>
+                        <div class="resource-list" id="external-datasources">
+                            <!-- Will be populated by JS -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 数据湖Schema资源 Tab -->
+                <div id="schema-panel" class="tab-panel">
+                    <div class="resource-category">
+                        <h3>Hive资源（数据湖）</h3>
+                        <div class="resource-list" id="hive-schemas">
+                            <!-- Will be populated by JS -->
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="cancel-button" data-cancel-data-resource-modal>取消</button>
+                <button type="button" class="save-button" id="pm_saveDataResources">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 资源详情浮窗 -->
+    <div id="resourceTooltip" class="resource-tooltip">
+        <div class="resource-tooltip-header" id="tooltipHeader"></div>
+        <div class="resource-tooltip-list" id="tooltipList"></div>
+    </div>
+
+<script>
+    // Ensure this script is idempotent and can be re-run if content is loaded multiple times.
+    // Also, ensure it doesn't conflict with other modules' scripts.
+    (function() { // IIFE to create a local scope
+        // Prefix IDs for this module to avoid conflicts if multiple modules are loaded (though less likely with full content replacement)
+        const modalId = 'pm_projectModal';
+        const dataResourceModalId = 'pm_dataResourceModal';
+        const formId = 'pm_projectForm';
+        const tableBodyId = 'pm_projectTableBody';
+        const addBtnId = 'pm_addProjectBtn';
+
+        // Check if already initialized for this specific content structure
+        // This check helps if the script itself is part of the loaded content multiple times.
+        if (document.getElementById(tableBodyId) && document.getElementById(tableBodyId).dataset.initialized === 'true') {
+            return; // Already initialized
+        }
+
+        const projectModal = document.getElementById(modalId);
+        const dataResourceModal = document.getElementById(dataResourceModalId);
+        const projectForm = document.getElementById(formId);
+        const projectTableBody = document.getElementById(tableBodyId);
+        const modalTitle = document.getElementById('pm_modalTitle');
+        const projectIdInput = document.getElementById('pm_projectId');
+        const projectNameInput = document.getElementById('pm_projectName');
+        const projectDescriptionInput = document.getElementById('pm_projectDescription');
+        const projectAdminSelect = document.getElementById('pm_projectAdmin');
+        const addProjectBtn = document.getElementById(addBtnId);
+
+        // Ensure elements exist before proceeding
+        if (!projectModal || !projectForm || !projectTableBody || !addProjectBtn) {
+            // console.error("Project Management: Core DOM elements not found. Skipping initialization.");
+            return;
+        }
+
+        const LS_PROJECTS_KEY = 'dataPlatformProjects';
+        const LS_USERS_KEY = 'dataPlatformUsers';
+        const LS_DATA_RESOURCES_KEY = 'dataPlatformDataResources';
+
+        let projects = [];
+        let users = [];
+        let currentProjectId = null;
+
+        // Data Resources Data
+        const dataResources = {
+            businessDatasources: [
+                { id: 'ds_001', name: '精算数据平台', description: '人保寿险精算数据分析与管理平台', status: 'active', type: 'oracle', company: '人保寿险' },
+                { id: 'ds_002', name: '集团新一代审计系统-寿险后台部分', description: '寿险业务审计管理系统后台', status: 'active', type: 'mysql', company: '人保寿险' },
+                { id: 'ds_003', name: '反洗钱系统(AML_RISK)', description: '反洗钱风险监控系统', status: 'active', type: 'oracle', company: '人保寿险' },
+                { id: 'ds_004', name: '反洗钱系统(AML_IDENTIFY)', description: '反洗钱身份识别系统', status: 'active', type: 'oracle', company: '人保寿险' },
+                { id: 'ds_005', name: '大数据平台-客户标签数据', description: '客户画像标签数据平台', status: 'active', type: 'hive', company: '人保寿险' },
+                { id: 'ds_006', name: '预算管理系统', description: '企业预算编制与执行管理系统', status: 'active', type: 'mysql', company: '人保寿险' },
+                { id: 'ds_007', name: '核心业务系统(piccprod)', description: '人保寿险核心业务处理系统生产环境', status: 'active', type: 'oracle', company: '人保寿险' },
+                { id: 'ds_008', name: '核心业务系统(claim_prod)', description: '理赔业务核心系统生产环境', status: 'active', type: 'oracle', company: '人保寿险' },
+                { id: 'ds_009', name: '电话中心客服系统', description: '客户服务热线管理系统', status: 'active', type: 'mysql', company: '人保寿险' },
+                { id: 'ds_010', name: 'CRM系统', description: '客户关系管理系统', status: 'active', type: 'oracle', company: '人保寿险' },
+                { id: 'ds_011', name: '保监会报送系统', description: '监管数据报送管理系统', status: 'active', type: 'mysql', company: '人保寿险' },
+                { id: 'ds_012', name: '电话中心回访系统', description: '客户回访质检管理系统', status: 'active', type: 'mysql', company: '人保寿险' },
+                { id: 'ds_013', name: '核心统一数据平台', description: '企业级统一数据管理平台', status: 'active', type: 'hive', company: '人保寿险' },
+                { id: 'ds_014', name: '单证管理系统', description: '保险单证管理系统', status: 'active', type: 'mysql', company: '人保寿险' },
+                { id: 'ds_015', name: '人保寿险ECIF系统', description: '企业客户信息整合系统', status: 'active', type: 'oracle', company: '人保寿险' },
+                { id: 'ds_016', name: '弹性福利平台', description: '员工福利管理平台', status: 'inactive', type: 'mysql', company: '人保寿险' },
+                { id: 'ds_017', name: '人保E家(ehome)', description: '人保集团内部办公平台', status: 'active', type: 'mysql', company: '人保寿险' },
+                { id: 'ds_018', name: '人保E家(goldenidea)', description: '人保集团创新想法平台', status: 'active', type: 'mysql', company: '人保寿险' },
+                
+                // 添加其他公司的示例系统
+                { id: 'ds_019', name: '财务核算系统', description: '人保集团财务核算处理系统', status: 'active', type: 'oracle', company: '人保集团' },
+                { id: 'ds_020', name: '人力资源管理系统', description: 'HR人员管理系统', status: 'active', type: 'mysql', company: '人保集团' },
+                { id: 'ds_021', name: '供应链管理平台', description: '企业供应链协同管理', status: 'active', type: 'postgresql', company: '人保集团' },
+                { id: 'ds_022', name: '资产管理系统', description: '固定资产管理系统', status: 'inactive', type: 'sqlserver', company: '人保集团' },
+                { id: 'bigdata_bv', description: '仅有实例编码，无系统名称', status: 'active', type: 'hive', company: '人保寿险' },
+                { id: 'bigdata_code', name: 'bigdata_code', description: '仅有实例编码，name与id相同', status: 'active', type: 'hive', company: '人保寿险' }
+            ],
+            externalDatasources: [
+                { id: 'ext_001', name: '/sftp/picc/finance/daily_reports', description: '财务日报数据传输目录', status: 'active', type: 'sftp', company: '人保集团' },
+                { id: 'ext_002', name: '/sftp/picc/regulatory/cbirc_reports', description: '银保监会监管报送数据目录', status: 'active', type: 'sftp', company: '人保寿险' },
+                { id: 'ext_003', name: '/sftp/partner/banks/transaction_data', description: '银行交易数据接收目录', status: 'active', type: 'sftp', company: '合作银行' },
+                { id: 'ext_004', name: '/sftp/external/weather/meteorological', description: '气象数据接收目录', status: 'active', type: 'sftp', company: '气象局' },
+                { id: 'ext_005', name: '/sftp/picc/claims/medical_data', description: '医疗理赔数据传输目录', status: 'active', type: 'sftp', company: '人保寿险' },
+                { id: 'ext_006', name: '/sftp/partner/reinsure/treaty_data', description: '再保险条约数据目录', status: 'active', type: 'sftp', company: '再保险公司' },
+                { id: 'ext_007', name: '/sftp/picc/audit/internal_audit', description: '内部审计数据传输目录', status: 'active', type: 'sftp', company: '人保集团' },
+                { id: 'ext_008', name: '/sftp/external/credit/rating_data', description: '信用评级数据接收目录', status: 'inactive', type: 'sftp', company: '信用评级机构' },
+                { id: 'ext_009', name: '/sftp/picc/investment/fund_data', description: '投资基金数据传输目录', status: 'active', type: 'sftp', company: '人保集团' },
+                { id: 'ext_010', name: '/sftp/external/tax/invoice_verify', description: '发票验证数据接收目录', status: 'active', type: 'sftp', company: '税务局' }
+            ],
+            hiveSchemas: [
+                { id: 'hive_001', name: 'hive/hl_mis_ods', description: 'MIS操作数据存储层', status: 'active', type: 'hive', company: '人保寿险' },
+                { id: 'hive_002', name: 'hive/hl_crm_dwd', description: 'CRM数据仓库详细层', status: 'active', type: 'hive', company: '人保寿险' },
+                { id: 'hive_003', name: 'hive/hl_finance_dws', description: '财务数据服务层', status: 'active', type: 'hive', company: '人保集团' },
+                { id: 'hive_004', name: 'hive/hl_market_ads', description: '营销数据应用层', status: 'inactive', type: 'hive', company: '人保寿险' },
+                { id: 'hive_005', name: 'hive/hl_supply_ods', description: '供应链操作数据层', status: 'active', type: 'hive', company: '人保集团' },
+                { id: 'hive_006', name: 'hive/hl_hr_dwd', description: '人力资源详细数据层', status: 'active', type: 'hive', company: '人保集团' },
+                { id: 'hive_007', name: 'hive/hl_sales_dws', description: '销售数据服务层', status: 'active', type: 'hive', company: '人保寿险' },
+                { id: 'hive_008', name: 'hive/hl_inventory_ods', description: '库存操作数据层', status: 'active', type: 'hive', company: '人保集团' },
+                { id: 'hive_009', name: 'hive/hl_quality_dwd', description: '质量管理详细数据层', status: 'inactive', type: 'hive', company: '人保寿险' },
+                { id: 'hive_010', name: 'hive/hl_customer_ads', description: '客户主题应用数据层', status: 'active', type: 'hive', company: '人保寿险' }
+            ]
+        };
+
+        function loadUsers() {
+            const storedUsers = localStorage.getItem(LS_USERS_KEY);
+            users = storedUsers ? JSON.parse(storedUsers) : [
+                { id: 'user_admin', username: 'admin', email: 'admin@dataplatform.com', status: 'active' },
+                { id: 'user_001', username: '张伟', email: 'zhang.wei@company.com', status: 'active' },
+                { id: 'user_002', username: '李娜', email: 'li.na@company.com', status: 'active' },
+                { id: 'user_003', username: '王强', email: 'wang.qiang@company.com', status: 'active' },
+                { id: 'user_004', username: '刘敏', email: 'liu.min@company.com', status: 'active' },
+                { id: 'user_005', username: '陈杰', email: 'chen.jie@company.com', status: 'active' },
+                { id: 'user_006', username: '赵雷', email: 'zhao.lei@company.com', status: 'active' },
+                { id: 'user_007', username: '孙丽', email: 'sun.li@company.com', status: 'active' },
+                { id: 'user_008', username: '周磊', email: 'zhou.lei@company.com', status: 'active' },
+                { id: 'user_009', username: '吴静', email: 'wu.jing@company.com', status: 'inactive' }
+            ];
+            if (!storedUsers && users.length > 0) {
+                localStorage.setItem(LS_USERS_KEY, JSON.stringify(users));
+            }
+        }
+
+        function populateUserSelect(selectedAdminId = null) {
+            if (!projectAdminSelect) return;
+            projectAdminSelect.innerHTML = '<option value="">-- 选择管理员 --</option>';
+            users.filter(u => u.status === 'active').forEach(user => {
+                const option = document.createElement('option');
+                option.value = user.id;
+                option.textContent = user.email ? `${user.username} (${user.email})` : user.username;
+                if (user.id === selectedAdminId) {
+                    option.selected = true;
+                }
+                projectAdminSelect.appendChild(option);
+            });
+        }
+
+        function loadProjects() {
+            const storedProjects = localStorage.getItem(LS_PROJECTS_KEY);
+            // Force reset to ensure we have demo data - remove this line in production
+            let shouldUseDefaultData = true;
+            if (storedProjects) {
+                try {
+                    const parsed = JSON.parse(storedProjects);
+                    if (parsed && parsed.length > 0) {
+                        shouldUseDefaultData = false;
+                        projects = parsed;
+                    }
+                } catch (e) {
+                    console.log('Error parsing stored projects, using default data');
+                }
+            }
+            
+            if (shouldUseDefaultData) {
+                projects = [
+                { 
+                    id: 'proj_001', 
+                    name: '寿险精算数据平台', 
+                    description: '整合寿险精算数据，构建精算模型，支持产品定价和风险评估', 
+                    resources: ['ds_001', 'ds_005', 'hive_001', 'hive_002'], 
+                    admin: 'user_001',
+                    createdAt: '2023-03-15T09:30:00Z'
+                },
+                { 
+                    id: 'proj_002', 
+                    name: '反洗钱监控平台', 
+                    description: '实时监控可疑交易，识别洗钱风险，确保合规管理', 
+                    resources: ['ds_003', 'ds_004', 'ext_001', 'hive_004'], 
+                    admin: 'user_002',
+                    createdAt: '2023-04-20T14:15:00Z'
+                },
+                { 
+                    id: 'proj_003', 
+                    name: '核心业务数据治理', 
+                    description: '建立核心业务数据标准，监控数据质量，确保业务数据准确性', 
+                    resources: ['ds_007', 'ds_008', 'ds_013', 'hive_005'], 
+                    admin: 'user_003',
+                    createdAt: '2023-05-10T11:45:00Z'
+                },
+                { 
+                    id: 'proj_004', 
+                    name: '监管报送自动化', 
+                    description: '自动化保监会数据报送，确保监管合规和数据及时性', 
+                    resources: ['ds_011', 'ds_019', 'hive_003', 'ext_007', 'ext_010'], 
+                    admin: 'user_004',
+                    createdAt: '2023-06-05T16:20:00Z'
+                },
+                { 
+                    id: 'proj_005', 
+                    name: '客户服务质量分析', 
+                    description: '分析客户服务数据，优化服务流程，提升客户满意度', 
+                    resources: ['ds_009', 'ds_012'], 
+                    admin: 'user_005',
+                    createdAt: '2023-07-12T10:00:00Z'
+                },
+                { 
+                    id: 'proj_006', 
+                    name: 'ECIF客户统一视图', 
+                    description: '整合客户信息，构建360度客户视图，支持精准营销', 
+                    resources: ['ds_015', 'ds_010', 'ext_004', 'ext_006', 'hive_008'], 
+                    admin: 'user_006',
+                    createdAt: '2023-08-18T14:25:00Z'
+                },
+                { 
+                    id: 'proj_007', 
+                    name: '人保E家数据分析', 
+                    description: '分析员工使用行为，优化内部系统功能和用户体验', 
+                    resources: ['ds_017', 'ds_018', 'hive_007'], 
+                    admin: 'user_007',
+                    createdAt: '2023-09-22T11:15:00Z'
+                },
+                { 
+                    id: 'proj_008', 
+                    name: '单证管理数字化', 
+                    description: '数字化保险单证管理，提升处理效率和存储管理', 
+                    resources: ['ds_014', 'ext_005', 'hive_010'], 
+                    admin: 'user_008',
+                    createdAt: '2023-10-08T16:40:00Z'
+                },
+                { 
+                    id: 'proj_009', 
+                    name: '人力资源数据中心', 
+                    description: '构建人力资源数据仓库，支持员工画像分析和HR决策', 
+                    resources: ['ds_020', 'ds_016', 'hive_006'], 
+                    admin: 'user_001',
+                    createdAt: '2023-11-03T13:20:00Z'
+                },
+                { 
+                    id: 'proj_010', 
+                    name: '实时监控告警系统', 
+                    description: '构建企业级实时监控体系，及时发现系统异常并进行告警处理', 
+                    resources: [], 
+                    admin: 'user_002',
+                    createdAt: '2023-11-15T09:45:00Z'
+                },
+                { 
+                    id: 'proj_011', 
+                    name: '财务管理一体化', 
+                    description: '整合预算、核算等财务数据，实现财务管理数字化转型', 
+                    resources: ['ds_006', 'ds_019', 'ds_022', 'ext_009', 'hive_003'], 
+                    admin: 'user_003',
+                    createdAt: '2023-12-01T15:30:00Z'
+                },
+                { 
+                    id: 'proj_012', 
+                    name: '大数据湖建设项目', 
+                    description: '构建企业级数据湖，统一存储和管理保险业务各类数据', 
+                    resources: ['ds_013', 'hive_001'], 
+                    admin: 'user_004',
+                    createdAt: '2024-01-08T10:15:00Z'
+                }
+                ];
+                // Save the default data to localStorage
+                localStorage.setItem(LS_PROJECTS_KEY, JSON.stringify(projects));
+            }
+            renderProjects();
+        }
+
+        function getResourceDisplayText(resourceIds, projectId) {
+            if (!resourceIds || resourceIds.length === 0) return '-';
+            
+            // Get all resource categories with type information
+            const allResources = [
+                ...dataResources.businessDatasources.map(r => ({...r, category: 'datasource'})),
+                ...dataResources.externalDatasources.map(r => ({...r, category: 'datasource'})),
+                ...dataResources.hiveSchemas.map(r => ({...r, category: 'datalake'}))
+            ];
+            
+            // Group resources by category
+            const resourcesByCategory = {
+                datasource: [],
+                datalake: []
+            };
+            
+            resourceIds.forEach(id => {
+                const resource = allResources.find(r => r.id === id);
+                if (resource) {
+                    resourcesByCategory[resource.category].push(resource);
+                }
+            });
+            
+            // Generate cards HTML
+            const cards = [];
+            
+            if (resourcesByCategory.datasource.length > 0) {
+                const count = resourcesByCategory.datasource.length;
+                cards.push(`<div class="resource-card datasource" data-category="datasource" data-project-id="${projectId}">数据源 ${count}个</div>`);
+            }
+            
+            if (resourcesByCategory.datalake.length > 0) {
+                const count = resourcesByCategory.datalake.length;
+                cards.push(`<div class="resource-card datalake" data-category="datalake" data-project-id="${projectId}">数据湖 ${count}个</div>`);
+            }
+            
+            return `<div class="resource-cards">${cards.join('')}</div>`;
+        }
+
+        function renderProjects() {
+            if (!projectTableBody) return;
+            projectTableBody.innerHTML = '';
+            if (projects.length === 0) {
+                projectTableBody.innerHTML = `<tr><td colspan="6" class="empty-table-message">暂无项目数据</td></tr>`;
+                return;
+            }
+            projects.forEach(project => {
+                const adminUser = users.find(u => u.id === project.admin);
+                const adminName = adminUser ? (adminUser.email ? `${adminUser.username} (${adminUser.email})` : adminUser.username) : '未分配';
+                const resourcesText = getResourceDisplayText(project.resources, project.id);
+                
+                const rowHTML = `
+                    <tr>
+                        <td>${project.id}</td>
+                        <td>${project.name}</td>
+                        <td>${project.description || '-'}</td>
+                        <td class="resource-cell">${resourcesText}</td>
+                        <td>${adminName}</td>
+                        <td class="action-buttons">
+                            <button data-edit-id="${project.id}"><i class="fas fa-edit"></i> 编辑</button>
+                            <button data-resource-id="${project.id}"><i class="fas fa-database"></i> 数据资源</button>
+                            <button class="delete-button" data-delete-id="${project.id}"><i class="fas fa-trash-alt"></i> 删除</button>
+                        </td>
+                    </tr>
+                `;
+                projectTableBody.insertAdjacentHTML('beforeend', rowHTML);
+            });
+        }
+
+        function openModal(isEdit = false, projectIdToEdit = null) {
+            if (!projectForm || !projectIdInput || !modalTitle) return;
+            projectForm.reset();
+            projectIdInput.value = '';
+            populateUserSelect();
+
+            if (isEdit && projectIdToEdit) {
+                const project = projects.find(p => p.id === projectIdToEdit);
+                if (project) {
+                    modalTitle.textContent = '编辑项目';
+                    projectIdInput.value = project.id;
+                    projectNameInput.value = project.name;
+                    projectDescriptionInput.value = project.description;
+                    populateUserSelect(project.admin);
+                } else {
+                    alert('未找到项目!');
+                    return;
+                }
+            } else {
+                modalTitle.textContent = '新增项目';
+            }
+            if(projectModal) projectModal.style.display = 'block';
+        }
+
+        function closeModal() {
+            if(projectModal) projectModal.style.display = 'none';
+        }
+
+        // Data Resource Modal Functions
+        function openDataResourceModal(projectId) {
+            currentProjectId = projectId;
+            const project = projects.find(p => p.id === projectId);
+            if (!project) {
+                alert('未找到项目!');
+                return;
+            }
+
+            const modalTitle = document.getElementById('pm_dataResourceModalTitle');
+            if (modalTitle) {
+                modalTitle.textContent = `${project.name} - 数据资源管理`;
+            }
+
+            // Populate resource lists
+            populateResourceList('business-datasources', dataResources.businessDatasources, project.resources || []);
+            populateResourceList('external-datasources', dataResources.externalDatasources, project.resources || []);
+            populateResourceList('hive-schemas', dataResources.hiveSchemas, project.resources || []);
+
+            if (dataResourceModal) dataResourceModal.style.display = 'block';
+        }
+
+        function closeDataResourceModal() {
+            if (dataResourceModal) dataResourceModal.style.display = 'none';
+            currentProjectId = null;
+        }
+
+        function populateResourceList(containerId, resources, selectedResources) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+
+            container.innerHTML = '';
+            resources.forEach(resource => {
+                const isSelected = selectedResources.includes(resource.id);
+
+                // 新增：业务系统数据源展示格式调整
+                let displayName = '';
+                if (resource.name && resource.id && resource.name !== resource.id) {
+                    // 如果有系统名称且实例编码不等于名称，展示"系统名称（实例编码）"
+                    displayName = `${resource.name}（${resource.id}）`;
+                } else {
+                    // 仅有实例编码时只展示实例编码
+                    displayName = resource.id;
+                }
+
+                // For business datasources, show company; for others, show description
+                const rightInfo = resource.company ? 
+                    `<span class="resource-company">${resource.company}</span>` : 
+                    `<span class="resource-company">${resource.type.toUpperCase()}</span>`;
+
+                const resourceHTML = `
+                    <div class="resource-item ${isSelected ? 'selected' : ''}" data-company="${resource.company || ''}" data-type="${resource.type}" data-name="${resource.name ? resource.name.toLowerCase() : ''}">
+                        <input type="checkbox" id="resource_${resource.id}" value="${resource.id}" ${isSelected ? 'checked' : ''}>
+                        <div class="resource-info">
+                            <span class="resource-name">${displayName}</span>
+                            ${rightInfo}
+                        </div>
+                    </div>
+                `;
+                container.insertAdjacentHTML('beforeend', resourceHTML);
+            });
+
+            // Add click event listeners for better UX
+            container.querySelectorAll('.resource-item').forEach(item => {
+                const checkbox = item.querySelector('input[type="checkbox"]');
+
+                item.addEventListener('click', (e) => {
+                    if (e.target.type !== 'checkbox') {
+                        checkbox.checked = !checkbox.checked;
+                        item.classList.toggle('selected', checkbox.checked);
+                    }
+                });
+
+                checkbox.addEventListener('change', () => {
+                    item.classList.toggle('selected', checkbox.checked);
+                });
+            });
+        }
+
+        // Initialize company filter options for datasource tab
+        function initializeFilters() {
+            const companyFilter = document.getElementById('company-filter');
+            const systemFilter = document.getElementById('system-filter');
+            const clearFiltersBtn = document.getElementById('clear-filters');
+            const filterContainer = document.getElementById('datasource-filter-container');
+
+            if (!companyFilter) return;
+
+            // Populate company filter - include both business and external datasources
+            const allCompanies = [
+                ...dataResources.businessDatasources.map(ds => ds.company),
+                ...dataResources.externalDatasources.map(ds => ds.company)
+            ].filter(Boolean);
+            const companies = [...new Set(allCompanies)];
+            companies.forEach(company => {
+                const option = document.createElement('option');
+                option.value = company;
+                option.textContent = company;
+                companyFilter.appendChild(option);
+            });
+
+            // Add filter event listeners
+            const applyFilters = () => {
+                const companyValue = companyFilter.value;
+                const systemValue = systemFilter.value.toLowerCase();
+
+                // Filter business datasources
+                const businessResourceItems = document.querySelectorAll('#business-datasources .resource-item');
+                businessResourceItems.forEach(item => {
+                    const itemCompany = item.dataset.company;
+                    const itemName = item.dataset.name;
+
+                    const companyMatch = !companyValue || itemCompany === companyValue;
+                    const systemMatch = !systemValue || itemName.includes(systemValue);
+
+                    if (companyMatch && systemMatch) {
+                        item.classList.remove('hidden');
+                    } else {
+                        item.classList.add('hidden');
+                    }
+                });
+
+                // Filter external datasources
+                const externalResourceItems = document.querySelectorAll('#external-datasources .resource-item');
+                externalResourceItems.forEach(item => {
+                    const itemCompany = item.dataset.company;
+                    const itemName = item.dataset.name;
+
+                    const companyMatch = !companyValue || itemCompany === companyValue;
+                    const systemMatch = !systemValue || itemName.includes(systemValue);
+
+                    if (companyMatch && systemMatch) {
+                        item.classList.remove('hidden');
+                    } else {
+                        item.classList.add('hidden');
+                    }
+                });
+            };
+
+            const clearFilters = () => {
+                companyFilter.value = '';
+                systemFilter.value = '';
+                document.querySelectorAll('#business-datasources .resource-item, #external-datasources .resource-item').forEach(item => {
+                    item.classList.remove('hidden');
+                });
+            };
+
+            companyFilter.addEventListener('change', applyFilters);
+            systemFilter.addEventListener('input', applyFilters);
+            clearFiltersBtn.addEventListener('click', clearFilters);
+
+            // Show/hide filter container based on active tab
+            const showHideFilters = (activeTab) => {
+                if (activeTab === 'datasource') {
+                    filterContainer.style.display = 'block';
+                } else {
+                    filterContainer.style.display = 'none';
+                }
+            };
+
+            // Initialize filter visibility
+            showHideFilters('datasource');
+
+            // Return the function to be called when tab changes
+            return showHideFilters;
+        }
+
+        // Initialize Hive filter options for schema tab
+        function initializeHiveFilters() {
+            const hiveCompanyFilter = document.getElementById('hive-company-filter');
+            const hiveNameFilter = document.getElementById('hive-name-filter');
+            const clearHiveFiltersBtn = document.getElementById('clear-hive-filters');
+            const hiveFilterContainer = document.getElementById('hive-filter-container');
+
+            if (!hiveCompanyFilter) return;
+
+            // Populate company filter for Hive resources
+            const hiveCompanies = [...new Set(dataResources.hiveSchemas.map(hs => hs.company).filter(Boolean))];
+            hiveCompanies.forEach(company => {
+                const option = document.createElement('option');
+                option.value = company;
+                option.textContent = company;
+                hiveCompanyFilter.appendChild(option);
+            });
+
+            // Add filter event listeners for Hive resources
+            const applyHiveFilters = () => {
+                const companyValue = hiveCompanyFilter.value;
+                const nameValue = hiveNameFilter.value.toLowerCase();
+
+                // Filter Hive resources
+                const hiveResourceItems = document.querySelectorAll('#hive-schemas .resource-item');
+                hiveResourceItems.forEach(item => {
+                    const itemCompany = item.dataset.company;
+                    const itemName = item.dataset.name;
+
+                    const companyMatch = !companyValue || itemCompany === companyValue;
+                    const nameMatch = !nameValue || itemName.includes(nameValue);
+
+                    if (companyMatch && nameMatch) {
+                        item.classList.remove('hidden');
+                    } else {
+                        item.classList.add('hidden');
+                    }
+                });
+            };
+
+            const clearHiveFilters = () => {
+                hiveCompanyFilter.value = '';
+                hiveNameFilter.value = '';
+                document.querySelectorAll('#hive-schemas .resource-item').forEach(item => {
+                    item.classList.remove('hidden');
+                });
+            };
+
+            hiveCompanyFilter.addEventListener('change', applyHiveFilters);
+            hiveNameFilter.addEventListener('input', applyHiveFilters);
+            clearHiveFiltersBtn.addEventListener('click', clearHiveFilters);
+
+            // Show/hide Hive filter container based on active tab
+            const showHideHiveFilters = (activeTab) => {
+                if (activeTab === 'schema') {
+                    hiveFilterContainer.style.display = 'block';
+                } else {
+                    hiveFilterContainer.style.display = 'none';
+                }
+            };
+
+            // Return the function to be called when tab changes
+            return showHideHiveFilters;
+        }
+
+        function saveDataResources() {
+            if (!currentProjectId) return;
+
+            // Collect all checked resources
+            const checkedResources = [];
+            const checkboxes = dataResourceModal.querySelectorAll('input[type="checkbox"]:checked');
+            checkboxes.forEach(checkbox => {
+                checkedResources.push(checkbox.value);
+            });
+
+            // Update project
+            const projectIndex = projects.findIndex(p => p.id === currentProjectId);
+            if (projectIndex > -1) {
+                projects[projectIndex].resources = checkedResources;
+                saveAndRenderProjects();
+                closeDataResourceModal();
+                alert('数据资源配置已保存！');
+            }
+        }
+
+        // Tab switching functionality
+        function initTabs() {
+            const tabButtons = dataResourceModal.querySelectorAll('.tab-button');
+            const tabPanels = dataResourceModal.querySelectorAll('.tab-panel');
+            let showHideFilters = null;
+            let showHideHiveFilters = null;
+
+            // Initialize both filter systems and get the show/hide functions
+            showHideFilters = initializeFilters();
+            showHideHiveFilters = initializeHiveFilters();
+
+            tabButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const targetTab = button.dataset.tab;
+                    
+                    // Update tab buttons
+                    tabButtons.forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+                    
+                    // Update tab panels
+                    tabPanels.forEach(panel => {
+                        panel.classList.remove('active');
+                        if (panel.id === targetTab + '-panel') {
+                            panel.classList.add('active');
+                        }
+                    });
+
+                    // Show/hide filters based on active tab
+                    if (showHideFilters) {
+                        showHideFilters(targetTab);
+                    }
+                    if (showHideHiveFilters) {
+                        showHideHiveFilters(targetTab);
+                    }
+                });
+            });
+        }
+
+        addProjectBtn.onclick = () => openModal(false);
+        
+        // Event delegation for edit/delete/resource buttons and resource cards
+        projectTableBody.addEventListener('click', function(event) {
+            const editButton = event.target.closest('button[data-edit-id]');
+            const deleteButton = event.target.closest('button.delete-button[data-delete-id]');
+            const resourceButton = event.target.closest('button[data-resource-id]');
+            const resourceCard = event.target.closest('.resource-card');
+
+            if (editButton) {
+                openModal(true, editButton.dataset.editId);
+            }
+            if (deleteButton) {
+                if (confirm('确定要删除此项目吗？此操作不可恢复。')) {
+                    projects = projects.filter(p => p.id !== deleteButton.dataset.deleteId);
+                    saveAndRenderProjects();
+                }
+            }
+            if (resourceButton) {
+                openDataResourceModal(resourceButton.dataset.resourceId);
+            }
+            if (resourceCard) {
+                showResourceTooltip(event, resourceCard);
+            }
+        });
+        
+        const closeButton = projectModal.querySelector('button[data-close-pm-modal]');
+        if(closeButton) closeButton.onclick = closeModal;
+
+        const cancelButton = projectModal.querySelector('button[data-cancel-pm-modal]');
+        if(cancelButton) cancelButton.onclick = closeModal;
+
+        // Data Resource Modal Event Listeners
+        const closeDataResourceButton = dataResourceModal.querySelector('button[data-close-data-resource-modal]');
+        if(closeDataResourceButton) closeDataResourceButton.onclick = closeDataResourceModal;
+
+        const cancelDataResourceButton = dataResourceModal.querySelector('button[data-cancel-data-resource-modal]');
+        if(cancelDataResourceButton) cancelDataResourceButton.onclick = closeDataResourceModal;
+
+        const saveDataResourceButton = document.getElementById('pm_saveDataResources');
+        if(saveDataResourceButton) saveDataResourceButton.onclick = saveDataResources;
+
+        projectForm.onsubmit = function(event) {
+            event.preventDefault();
+            const id = projectIdInput.value;
+            const name = projectNameInput.value;
+            const description = projectDescriptionInput.value;
+            const admin = projectAdminSelect.value;
+
+            if (!name.trim()) {
+                alert('项目名称不能为空！');
+                return;
+            }
+            
+            if (id) {
+                const projectIndex = projects.findIndex(p => p.id === id);
+                if (projectIndex > -1) {
+                    projects[projectIndex] = { 
+                        ...projects[projectIndex], 
+                        name, 
+                        description, 
+                        admin 
+                    };
+                }
+            } else {
+                const newProject = {
+                    id: 'proj_' + new Date().getTime().toString().slice(-6) + Math.random().toString(36).substring(2, 5),
+                    name,
+                    description,
+                    resources: [],
+                    admin
+                };
+                projects.push(newProject);
+            }
+            saveAndRenderProjects();
+            closeModal();
+        };
+
+        function saveAndRenderProjects() {
+            localStorage.setItem(LS_PROJECTS_KEY, JSON.stringify(projects));
+            renderProjects();
+        }
+
+        function showResourceTooltip(event, resourceCard) {
+            const projectId = resourceCard.dataset.projectId;
+            const category = resourceCard.dataset.category;
+            const tooltip = document.getElementById('resourceTooltip');
+            const tooltipHeader = document.getElementById('tooltipHeader');
+            const tooltipList = document.getElementById('tooltipList');
+            
+            const project = projects.find(p => p.id === projectId);
+            if (!project || !project.resources) return;
+            
+            // Get all resource categories with type information
+            const allResources = [
+                ...dataResources.businessDatasources.map(r => ({...r, category: 'datasource'})),
+                ...dataResources.externalDatasources.map(r => ({...r, category: 'datasource'})),
+                ...dataResources.hiveSchemas.map(r => ({...r, category: 'datalake'}))
+            ];
+            
+            // Filter resources by category
+            const categoryResources = project.resources
+                .map(id => allResources.find(r => r.id === id))
+                .filter(r => r && r.category === category);
+            
+            if (categoryResources.length === 0) return;
+            
+            // Set header
+            const headerText = category === 'datasource' ? '数据源连接资源' : '数据湖库资源';
+            tooltipHeader.textContent = `${headerText} (${categoryResources.length}个)`;
+            
+            // Set list
+            tooltipList.innerHTML = categoryResources.map(resource => `
+                <div class="resource-tooltip-item">
+                    <span class="resource-name">${resource.name}</span>
+                    <span class="resource-company">${resource.company || ''}</span>
+                </div>
+            `).join('');
+            
+            // Position tooltip
+            const rect = resourceCard.getBoundingClientRect();
+            tooltip.style.left = rect.left + 'px';
+            tooltip.style.top = (rect.bottom + 8) + 'px';
+            tooltip.style.display = 'block';
+            
+            // Hide tooltip when clicking elsewhere
+            setTimeout(() => {
+                document.addEventListener('click', hideTooltip, { once: true });
+            }, 10);
+        }
+
+        function hideTooltip() {
+            const tooltip = document.getElementById('resourceTooltip');
+            tooltip.style.display = 'none';
+        }
+        
+        // Force reset demo data - uncomment this line to reset data
+        function resetDemoData() {
+            localStorage.removeItem(LS_PROJECTS_KEY);
+            localStorage.removeItem(LS_USERS_KEY);
+            console.log('Demo data reset, reloading...');
+            loadUsers();
+            loadProjects();
+        }
+        
+        // Force reset demo data once to ensure clean state
+        resetDemoData();
+        
+        // Initial data load for this module
+        loadUsers();
+        loadProjects();
+        initTabs();
+        
+        // Ensure projects are rendered
+        setTimeout(() => {
+            if (projects.length > 0) {
+                renderProjects();
+            }
+        }, 100);
+
+        // Mark as initialized
+        if (projectTableBody) {
+            projectTableBody.dataset.initialized = 'true';
+        }
+
+        // Make functions accessible if needed by other scripts or for debugging, but scoped to avoid collision
+        // This approach is generally safer than polluting `window` directly for many functions.
+        // However, index.html's loadContent expects to be able to re-run scripts, so IIFE helps isolate.
+    })();
+  </script>
+  </body>
+  </html> 
