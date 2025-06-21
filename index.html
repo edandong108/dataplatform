@@ -359,14 +359,14 @@
         /* 数据开发流程样式 */
         .development-flow-wrapper {
             background: linear-gradient(180deg, #fcfdff 0%, #f7f9fc 100%);
-            padding: 1rem;
+            padding: 0.75rem; /* 减少padding从1rem到0.75rem */
             border-radius: 8px;
             border: 1px solid #e2e8f0;
             font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
             color: #334155;
             display: flex;
             flex-direction: column;
-            gap: 1.5rem;
+            gap: 1rem; /* 减少gap从1.5rem到1rem */
             overflow: visible;
             width: 100%;
             box-sizing: border-box;
@@ -376,7 +376,7 @@
             background: rgba(255,255,255,0.8);
             border: 1px solid #e2e8f0;
             border-radius: 8px;
-            padding: 1rem;
+            padding: 0.75rem; /* 减少padding从1rem到0.75rem */
             box-shadow: 0 2px 6px rgba(0,0,0,0.1);
         }
 
@@ -402,7 +402,7 @@
             background: #f8fafc;
             border: 1px solid #e2e8f0;
             border-radius: 8px;
-            padding: 1rem;
+            padding: 0.75rem; /* 减少padding从1rem到0.75rem */
             position: relative;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
         }
@@ -798,7 +798,7 @@
             background-color: #F7FAFC;
             border: 1px solid #E2E8F0;
             border-radius: 8px;
-            padding: 1.2rem;
+            padding: 0.75rem; /* 大幅减少padding从1.2rem到0.75rem */
             height: 100%;
             display: flex;
             flex-direction: column;
@@ -808,9 +808,9 @@
             font-size: 1.1rem; /* 调大字号 */
             font-weight: 600;
             color: #2A4365;
-            margin-bottom: 1rem;
+            margin-bottom: 0.5rem; /* 减少margin-bottom从1rem到0.5rem */
             border-bottom: 2px solid #E2E8F0;
-            padding-bottom: 0.5rem;
+            padding-bottom: 0.25rem; /* 减少padding-bottom从0.5rem到0.25rem */
         }
 
         .steps-content {
@@ -864,14 +864,14 @@
         /* ------------------ New Architecture Diagram Styles ------------------ */
         .architecture-wrapper {
             background: linear-gradient(180deg, #fcfdff 0%, #f7f9fc 100%);
-            padding: 1rem;
+            padding: 0.75rem; /* 减少padding从1rem到0.75rem */
             border-radius: 8px;
             border: 1px solid #e2e8f0;
             font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
             color: #334155;
             display: flex;
             flex-direction: column;
-            gap: 0.4rem;
+            gap: 0.3rem; /* 减少gap从0.4rem到0.3rem */
             overflow: visible;
             width: 100%;
             box-sizing: border-box;
@@ -1282,7 +1282,7 @@
         .step-item {
             padding: 0.75rem;
             border-radius: 6px;
-            margin-bottom: 0.75rem;
+            margin-bottom: 0.25rem; /* 大幅减小步骤间距，从0.75rem减少到0.25rem */
             border: 1px solid #e5e7eb;
             background-color: #ffffff;
             box-shadow: 0 1px 3px rgba(0,0,0,0.05);
@@ -1328,8 +1328,13 @@
             background-color: #ffffff;
             border-radius: 8px;
             box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-            margin-bottom: 1rem;
+            margin-bottom: 0rem; /* 完全移除区块间距 */
             transition: all 0.3s ease;
+        }
+        
+        /* 最后一个描述区块不需要底部间距 */
+        .desc-section:last-child {
+            margin-bottom: 0;
         }
         
         .desc-section:hover {
@@ -1357,7 +1362,7 @@
         
         .desc-content {
             color: #4b5563;
-            font-size: 0.875rem;
+            font-size: 0.9rem; /* 调整为与小李工作流程文字大小一致 */
             line-height: 1.5;
             margin-bottom: 0.5rem;
         }
@@ -1415,9 +1420,246 @@
             visibility: visible;
         }
 
+        .compute-zone-content {
+            flex-grow: 1;
+        }
 
+        /* 数据平台服务流程样式 (修正版) */
+        .service-flow-container {
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            overflow: hidden;
+            font-size: 0.9rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+        .flow-header, .flow-row {
+            display: grid;
+            grid-template-columns: 1.5fr 5.5fr;
+        }
+        .flow-header {
+            border-bottom: 1px solid #e2e8f0;
+            background: linear-gradient(180deg, #f9fafb, #f1f5f9);
+            font-weight: 600;
+            color: #374151;
+        }
+        .flow-row {
+            transition: background-color 0.2s ease-in-out;
+            background-color: #fff;
+        }
+        .flow-row:hover {
+            background-color: #f8fafc;
+            /* 移除所有可能改变堆叠上下文的属性，只保留背景色变化 */
+        }
+        .flow-row .flow-details {
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .flow-row:last-child .flow-details {
+            border-bottom: none;
+        }
+        .flow-row:hover {
+            background-color: #f8fafc;
+            /* transform: scale(1.01); */ /* 移除缩放效果，从根本上解决hover时的箭头拉长问题 */
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            /* 移除 z-index: 5，避免箭头遮挡下面的步骤块 */
+            position: relative;
+        }
+        .flow-header .header-item, .flow-row > div {
+            padding: 0.85rem 1.2rem;
+            border-right: 1px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+        }
+        .flow-header .header-item:last-child, .flow-row > div:last-child {
+            border-right: none;
+        }
+        .flow-details p {
+            margin: 0;
+            color: #475569;
+            line-height: 1.6;
+        }
+        .flow-details p strong {
+            color: #1e3a8a;
+            font-weight: 600;
+        }
+        .flow-step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative; /* 为伪元素提供定位上下文 */
+            padding: 1rem 1rem;
+        }
+        .flow-row:not(:last-child) .flow-step::after {
+            content: '';
+            position: absolute;
+            top: 100%; /* 从当前步骤的底部开始 */
+            left: 50%;
+            transform: translateX(-50%);
+            width: 3px;
+            height: 2rem; /* 线条高度等于步骤间的垂直间距 */
+            background-color: #93c5fd;
+        }
+        .flow-row:not(:last-child) .flow-step::before {
+            content: '';
+            position: absolute;
+            top: calc(100% + 2rem); /* 定位在线条的末端 */
+            left: 50%;
+            transform: translate(-50%, -100%);
+            border-left: 7px solid transparent;
+            border-right: 7px solid transparent;
+            border-top: 9px solid #3b82f6;
+        }
 
+        /* 文档链接高亮样式 */
+        .doc-link {
+            color: #1d4ed8;
+            font-weight: 600;
+            background-color: #eef2ff;
+            padding: 0.125rem 0.375rem;
+            border-radius: 4px;
+            border: 1px solid #c7d2fe;
+            white-space: nowrap;
+        }
 
+        /* ------------------ Architecture Description Styles ------------------ */
+        .architecture-description {
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 1.2rem;
+            transition: all 0.3s ease;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        .architecture-description:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            border-color: #3182CE;
+        }
+        .architecture-description .desc-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #2A4365;
+            margin-bottom: 0.75rem;
+            border-bottom: 2px solid #E2E8F0;
+            padding-bottom: 0.5rem;
+        }
+        .architecture-description .desc-content {
+            font-size: 0.8rem;
+            color: #4A5568;
+            line-height: 1.6;
+            flex-grow: 1;
+            text-align: justify;
+        }
+        .architecture-description .arch-tools-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 0.75rem;
+        }
+        .architecture-description .tool-chip {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e6f2ff 100%);
+            border: 1px solid #bfdbfe;
+            border-radius: 20px;
+            padding: 0.25rem 0.75rem;
+            font-size: 0.75rem;
+            color: #1e40af;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            transition: all 0.2s ease;
+            position: relative;
+            cursor: pointer;
+        }
+        .architecture-description .tool-chip:hover {
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .architecture-description .tool-icon {
+            color: #3b82f6;
+            font-size: 0.85rem;
+        }
+        .architecture-description .tool-name {
+            font-weight: 500;
+        }
+        .architecture-description .tool-tooltip {
+            position: absolute;
+            top: calc(100% + 5px);
+            left: 0;
+            background-color: #1e40af;
+            color: white;
+            padding: 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            width: 200px;
+            z-index: 10;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.2s ease;
+            pointer-events: none;
+        }
+        .architecture-description .tool-chip:hover .tool-tooltip {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .flow-row:hover .step-box {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(59, 130, 246, 0.4);
+        }
+        /* 步骤色块样式恢复 */
+        .step-box {
+            border: 2px solid transparent;
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+            font-weight: 600;
+            padding: 0.75rem 1.25rem;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3);
+            transition: all 0.2s ease;
+            position: relative;
+            z-index: 2; /* 确保色块在连接线之上 */
+        }
+        /* 优化后的箭头样式 - 缩短连接线长度 */
+        .flow-row:not(:last-child) .flow-step::after {
+            /* 这是箭头的矩形"杆" */
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 4px; /* 减小箭头杆的宽度 */
+            height: 0.6rem; /* 大幅缩短箭头杆的长度 */
+            background-color: #93c5fd; /* 恢复蓝色 */
+            z-index: 1;
+        }
+        .flow-row:not(:last-child) .flow-step::before {
+            /* 这是箭头的三角形"头" */
+            content: '';
+            position: absolute;
+            top: calc(100% + 0.6rem); /* 紧跟在杆的末端 */
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 8px solid transparent; /* 减小箭头头的宽度 */
+            border-right: 8px solid transparent;
+            border-top: 8px solid #3b82f6; /* 箭头头的颜色 */
+            z-index: 1;
+        }
+
+        /* "具体内容"区块样式 */
+        .content-block {
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            padding: 1rem;
+            border-radius: 6px;
+            width: 100%;
+        }
 
     </style>
 </head>
@@ -1598,7 +1840,7 @@
                                         </div>
                                         <div class="swimlane-diagram">
                                             <div id="tooltip" class="tooltip" style="position: absolute; display: none; background-color: rgba(0,0,0,0.8); color: white; padding: 5px 10px; border-radius: 4px; font-size: 12px; pointer-events: none; z-index: 100;"></div>
-                                            <svg id="workflow-diagram" width="100%" height="450" viewBox="0 0 800 450" xmlns="http://www.w3.org/2000/svg"> {/* 增大SVG高度 */}
+                                            <svg id="workflow-diagram" width="100%" height="380" viewBox="0 0 800 380" xmlns="http://www.w3.org/2000/svg"> {/* 减小SVG高度到380 */}
                                                 <defs>
                                                     <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
                                                         <polygon points="0 0, 10 3.5, 0 7" fill="#3b82f6" />
@@ -1781,6 +2023,64 @@
                                                 <span class="step-text">在WS调度系统上基于job进行调度任务的配置，起调度</span>
                                             </div>
                                         </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 新增：数据平台服务流程模块 -->
+                    <div class="module-section">
+                        <h2 class="text-xl font-bold text-gray-800 mb-4 pl-4 border-l-4 border-blue-500">数据平台服务流程</h2>
+                        <div class="service-flow-container">
+                            <div class="flow-header">
+                                <div class="header-item">主流程</div>
+                                <div class="header-item">具体内容</div>
+                            </div>
+                            <div class="flow-body">
+                                <!-- 流程步骤 1: 需求提交 -->
+                                <div class="flow-row">
+                                    <div class="flow-step">
+                                        <div class="step-box">需求提交</div>
+                                    </div>
+                                    <div class="flow-details">
+                                        <div class="content-block"><p>有数据平台使用需求的业务方填写<span class="doc-link">《数据平台使用需求》</span>,并提交工单到【统一数据平台】系统。</p></div>
+                                    </div>
+                                </div>
+                                <!-- 流程步骤 2: 需求沟通 -->
+                                <div class="flow-row">
+                                    <div class="flow-step">
+                                        <div class="step-box">需求沟通</div>
+                                    </div>
+                                    <div class="flow-details">
+                                        <div class="content-block"><p>统一数据平台发起需求评审会（每周三），进行需求内容的详细沟通</p></div>
+                                    </div>
+                                </div>
+                                <!-- 流程步骤 3: 确认方案 -->
+                                <div class="flow-row">
+                                    <div class="flow-step">
+                                        <div class="step-box">确认方案</div>
+                                    </div>
+                                    <div class="flow-details">
+                                        <div class="content-block"><p>需求方与平台侧一起完成数据方案、所需资源的评估后，产出<span class="doc-link">《数据平台使用评估方案》</span></p></div>
+                                    </div>
+                                </div>
+                                <!-- 流程步骤 5: 平台适配 -->
+                                <div class="flow-row">
+                                    <div class="flow-step">
+                                        <div class="step-box">平台适配</div>
+                                    </div>
+                                    <div class="flow-details">
+                                        <div class="content-block"><p>若当前DX无法支持的源端数据需要排期实施。</p></div>
+                                    </div>
+                                </div>
+                                <!-- 流程步骤 6: 平台使用 -->
+                                <div class="flow-row">
+                                    <div class="flow-step">
+                                        <div class="step-box">平台使用</div>
+                                    </div>
+                                    <div class="flow-details">
+                                        <div class="content-block"><p>业务侧开通测试/正式环境相关权限，自行在平台上进行数据开发。参考<span class="doc-link">《平台使用指南》</span></p></div>
                                     </div>
                                 </div>
                             </div>
