@@ -1661,6 +1661,135 @@
             width: 100%;
         }
 
+        /* ==================== 锚点导航组件样式 ==================== */
+        .anchor-nav-container {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            background: #ffffff;
+            border-bottom: 1px solid #e2e8f0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            margin: -24px -24px 0 -24px; /* 消除顶部间隙，保持左右和底部边距 */
+            padding: 0 24px;
+        }
+        
+        /* 移除主内容区域的顶部间距 */
+        .home-content {
+            /* padding-top: 80px; 不再需要 */
+        }
+
+        .anchor-nav {
+            position: relative;
+            display: flex;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0.75rem 0;
+        }
+
+        .nav-items {
+            display: flex;
+            gap: 0;
+            position: relative;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            color: #64748b;
+            text-decoration: none;
+            font-size: 0.875rem;
+            font-weight: 500;
+            border-radius: 8px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            z-index: 2;
+            white-space: nowrap;
+        }
+
+        .nav-item i {
+            font-size: 1rem;
+            width: 18px;
+            text-align: center;
+        }
+
+        .nav-item:hover {
+            color: #3b82f6;
+            background-color: rgba(59, 130, 246, 0.05);
+            transform: translateY(-1px);
+        }
+
+        .nav-item.active {
+            color: #ffffff;
+            background-color: #3b82f6;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+
+        .nav-item.active:hover {
+            background-color: #2563eb;
+            transform: translateY(-1px);
+        }
+
+        /* 流动指示器效果 */
+        .nav-indicator {
+            position: absolute;
+            height: 100%;
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            border-radius: 8px;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 1;
+            opacity: 0;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .anchor-nav-container {
+                margin: -24px -16px 0 -16px; /* 移动端消除顶部间隙 */
+                padding: 0 16px;
+            }
+            
+            .nav-item {
+                padding: 0.5rem 1rem;
+                font-size: 0.8rem;
+            }
+            
+            .nav-item span {
+                display: none;
+            }
+            
+            .nav-item i {
+                font-size: 1.1rem;
+            }
+        }
+
+        /* 平滑滚动样式 */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        .module-section {
+            /* 不再需要scroll-margin-top，因为导航栏已经固定置顶 */
+        }
+
+        /* 添加淡入动画 */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .anchor-nav-container {
+            animation: fadeInUp 0.6s ease-out;
+        }
+
     </style>
 </head>
 <body class="bg-gray-100">
@@ -1708,8 +1837,29 @@
                 </ul>
             </aside>
             <main class="main-content" id="main-content-area">
+                <!-- 锚点导航组件 -->
+                <div class="anchor-nav-container">
+                    <nav class="anchor-nav">
+                        <div class="nav-items">
+                            <a href="#architecture" class="nav-item active" data-target="architecture">
+                                <i class="fas fa-sitemap"></i>
+                                <span>数据架构</span>
+                            </a>
+                            <a href="#development" class="nav-item" data-target="development">
+                                <i class="fas fa-code-branch"></i>
+                                <span>开发流程</span>
+                            </a>
+                            <a href="#service-flow" class="nav-item" data-target="service-flow">
+                                <i class="fas fa-project-diagram"></i>
+                                <span>服务流程</span>
+                            </a>
+                        </div>
+                        <div class="nav-indicator"></div>
+                    </nav>
+                </div>
+
                 <div id="home-content" class="home-content space-y-6">
-                    <div class="module-section" style="min-height: auto;">
+                    <div id="architecture" class="module-section" style="min-height: auto; margin-top: 24px;">
                         <h2 class="text-xl font-bold text-gray-800 mb-4 pl-4 border-l-4 border-blue-500">统一数据平台数据架构</h2>
                                                   <div class="grid grid-cols-2 gap-6">
                                                           <div class="col-span-1">
@@ -1828,7 +1978,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="module-section">
+                    <div id="development" class="module-section">
                         <h2 class="text-xl font-bold text-gray-800 mb-4 pl-4 border-l-4 border-blue-500">数据开发流程</h2>
                         <div class="flex gap-6">
                             <div class="w-3/5">
@@ -2030,7 +2180,7 @@
                     </div>
 
                     <!-- 新增：数据平台服务流程模块 -->
-                    <div class="module-section">
+                    <div id="service-flow" class="module-section">
                         <h2 class="text-xl font-bold text-gray-800 mb-4 pl-4 border-l-4 border-blue-500">数据平台服务流程</h2>
                         <div class="service-flow-container">
                             <div class="flow-header">
@@ -2187,9 +2337,108 @@
             // 初始化流程图提示框
             initFlowDiagramTooltips();
             
+            // 初始化锚点导航
+            initAnchorNavigation();
+            
             // 其他现有初始化代码
         });
         
+        // 初始化锚点导航功能
+        function initAnchorNavigation() {
+            const navItems = document.querySelectorAll('.nav-item');
+            const sections = document.querySelectorAll('.module-section');
+            const indicator = document.querySelector('.nav-indicator');
+            
+            // 点击导航项时的处理
+            navItems.forEach(item => {
+                item.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    // 移除所有活动状态
+                    navItems.forEach(nav => nav.classList.remove('active'));
+                    
+                    // 添加当前项的活动状态
+                    this.classList.add('active');
+                    
+                    // 滚动到目标部分
+                    const targetId = this.getAttribute('data-target');
+                    const targetSection = document.getElementById(targetId);
+                    
+                    if (targetSection) {
+                        // 直接滚动到目标位置，不需要复杂的偏移计算
+                        targetSection.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start'
+                        });
+                    }
+                    
+                    // 更新指示器位置
+                    updateIndicator(this);
+                });
+            });
+            
+            // 滚动时更新活动状态
+            const observerOptions = {
+                root: null,
+                rootMargin: '-100px 0px -60% 0px', // 固定的顶部边距
+                threshold: 0
+            };
+            
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const sectionId = entry.target.id;
+                        const correspondingNavItem = document.querySelector(`[data-target="${sectionId}"]`);
+                        
+                        if (correspondingNavItem) {
+                            // 移除所有活动状态
+                            navItems.forEach(nav => nav.classList.remove('active'));
+                            
+                            // 添加当前项的活动状态
+                            correspondingNavItem.classList.add('active');
+                            
+                            // 更新指示器位置
+                            updateIndicator(correspondingNavItem);
+                        }
+                    }
+                });
+            }, observerOptions);
+            
+            // 观察所有模块部分
+            sections.forEach(section => {
+                observer.observe(section);
+            });
+            
+            // 更新指示器位置的函数
+            function updateIndicator(activeItem) {
+                if (!indicator) return;
+                
+                const itemRect = activeItem.getBoundingClientRect();
+                const navRect = activeItem.closest('.nav-items').getBoundingClientRect();
+                
+                const left = itemRect.left - navRect.left;
+                const width = itemRect.width;
+                
+                indicator.style.left = `${left}px`;
+                indicator.style.width = `${width}px`;
+                indicator.style.opacity = '1';
+            }
+            
+            // 初始化指示器位置
+            const activeItem = document.querySelector('.nav-item.active');
+            if (activeItem) {
+                setTimeout(() => updateIndicator(activeItem), 100);
+            }
+            
+            // 窗口大小改变时重新计算指示器位置
+            window.addEventListener('resize', () => {
+                const currentActive = document.querySelector('.nav-item.active');
+                if (currentActive) {
+                    updateIndicator(currentActive);
+                }
+            });
+        }
+
         // 初始化流程图提示框
         function initFlowDiagramTooltips() {
             const tooltip = document.getElementById("tooltip");
