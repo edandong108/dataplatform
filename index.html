@@ -234,7 +234,9 @@
             position: relative;
             height: calc(100vh - 65px); /* 减去header高度 */
             overflow-y: auto; /* 改为auto以允许滚动 */
-            padding: 24px;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
         }
         .content-frame {
             display: none; /* 默认隐藏 iframe */
@@ -871,10 +873,12 @@
             color: #334155;
             display: flex;
             flex-direction: column;
-            gap: 0.3rem; /* 减少gap从0.4rem到0.3rem */
+            gap: 0.4rem; /* 恢复原来的间距 */
             overflow: visible;
             width: 100%;
             box-sizing: border-box;
+            height: 100%; /* 确保高度与右侧描述区域一致 */
+            justify-content: space-between; /* 均匀分布各层 */
         }
 
         .arch-layer {
@@ -882,7 +886,7 @@
             align-items: stretch;
             gap: 0.6rem;
             flex-shrink: 0;
-            min-height: 75px;
+            min-height: 85px; /* 增加最小高度 */
             width: 100%;
             box-sizing: border-box;
         }
@@ -895,7 +899,7 @@
             align-items: center;
             justify-content: center;
             font-weight: 600;
-            font-size: 0.8rem;
+            font-size: 0.9rem; /* 增大字体大小 */
             border-radius: 6px;
             writing-mode: vertical-rl;
             text-orientation: mixed;
@@ -945,7 +949,7 @@
             border-radius: 6px;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
             border: 1px solid rgba(0,0,0,0.1);
-            font-size: 0.75rem;
+            font-size: 0.85rem; /* 增大字体大小 */
             text-align: center;
             transition: all 0.3s ease;
             white-space: nowrap;
@@ -1005,7 +1009,7 @@
             color: #374151;
             padding-bottom: 0.2rem;
             border-bottom: 1px solid #e2e8f0;
-            font-size: 0.75rem;
+            font-size: 0.85rem; /* 增大字体大小 */
             text-shadow: 0 1px 2px rgba(0,0,0,0.1);
             white-space: nowrap;
         }
@@ -1025,7 +1029,7 @@
             width: 100%;
         }
         .offline-row-title {
-            font-size: 0.7rem;
+            font-size: 0.8rem; /* 增大字体大小 */
             font-weight: 600;
             color: #374151;
             flex: 0 0 40px;
@@ -1054,7 +1058,7 @@
             background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
             padding: 0.2rem 0.4rem;
             border-radius: 4px;
-            font-size: 0.7rem;
+            font-size: 0.8rem; /* 增大字体大小 */
             border: 1px solid #e2e8f0;
             font-weight: 500;
             transition: all 0.2s ease;
@@ -1469,6 +1473,10 @@
             display: flex;
             align-items: center;
         }
+        .flow-header .header-item {
+            justify-content: center;
+            font-weight: bold;
+        }
         .flow-header .header-item:last-child, .flow-row > div:last-child {
             border-right: none;
         }
@@ -1519,6 +1527,21 @@
             border-radius: 4px;
             border: 1px solid #c7d2fe;
             white-space: nowrap;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .doc-link:hover {
+            background-color: #dbeafe;
+            border-color: #93c5fd;
+            box-shadow: 0 2px 5px rgba(59, 130, 246, 0.3);
+            transform: translateY(-1px);
+        }
+        .doc-link:active {
+            transform: translateY(0);
+            box-shadow: 0 1px 2px rgba(59, 130, 246, 0.2);
         }
 
         /* ------------------ Architecture Description Styles ------------------ */
@@ -1546,7 +1569,7 @@
             padding-bottom: 0.5rem;
         }
         .architecture-description .desc-content {
-            font-size: 0.8rem;
+            font-size: 0.9rem; /* 调大字号与小李工作流程保持一致 */
             color: #4A5568;
             line-height: 1.6;
             flex-grow: 1;
@@ -1604,6 +1627,34 @@
         .architecture-description .tool-chip:hover .tool-tooltip {
             opacity: 1;
             visibility: visible;
+        }
+        
+        /* 架构图联动高亮效果 */
+        .arch-layer.highlight {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(59, 130, 246, 0.2);
+            z-index: 5;
+        }
+        
+        .arch-layer.highlight .layer-title-box {
+            box-shadow: 0 4px 8px rgba(59, 130, 246, 0.4);
+        }
+        
+        .arch-layer.highlight .layer-content {
+            border-color: #3b82f6;
+            background: linear-gradient(135deg, #f0f7ff 0%, #e6f0fd 100%);
+        }
+        
+        .desc-section.highlight {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(59, 130, 246, 0.15);
+            border-color: #3b82f6;
+            background: linear-gradient(135deg, #f0f7ff 0%, #e6f0fd 100%);
+        }
+        
+        .desc-section.highlight .desc-title {
+            color: #2563eb;
+            border-bottom-color: #93c5fd;
         }
 
         .flow-row:hover .step-box {
@@ -1669,44 +1720,54 @@
             background: #ffffff;
             border-bottom: 1px solid #e2e8f0;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-            margin: -24px -24px 0 -24px; /* 消除顶部间隙，保持左右和底部边距 */
-            padding: 0 24px;
+            padding: 0;
+            width: 100%;
+            margin: 0;
+            box-sizing: border-box;
+            flex-shrink: 0;
         }
         
-        /* 移除主内容区域的顶部间距 */
+        /* 添加主内容区域的内边距 */
         .home-content {
-            /* padding-top: 80px; 不再需要 */
+            padding: 24px;
+            flex-grow: 1;
         }
 
         .anchor-nav {
             position: relative;
             display: flex;
             align-items: center;
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0.75rem 0;
+            justify-content: center; /* 水平居中 */
+            height: 50px;
+            padding: 0;
+            background: transparent;
+            width: 100%;
         }
 
         .nav-items {
             display: flex;
-            gap: 0;
+            gap: 20px; /* 增加间距 */
             position: relative;
+            height: 100%;
+            justify-content: center; /* 水平居中 */
+            width: 100%; /* 铺满宽度 */
+            max-width: 800px; /* 限制最大宽度 */
         }
 
         .nav-item {
             display: flex;
             align-items: center;
             gap: 0.5rem;
-            padding: 0.75rem 1.5rem;
+            padding: 0 28px;
+            height: 100%;
             color: #64748b;
             text-decoration: none;
-            font-size: 0.875rem;
+            font-size: 0.95rem;
             font-weight: 500;
-            border-radius: 8px;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.2s ease;
             position: relative;
-            z-index: 2;
             white-space: nowrap;
+            letter-spacing: 0.02em;
         }
 
         .nav-item i {
@@ -1717,42 +1778,51 @@
 
         .nav-item:hover {
             color: #3b82f6;
-            background-color: rgba(59, 130, 246, 0.05);
-            transform: translateY(-1px);
         }
 
         .nav-item.active {
-            color: #ffffff;
-            background-color: #3b82f6;
-            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+            color: #2563eb;
+            font-weight: 600;
         }
 
-        .nav-item.active:hover {
-            background-color: #2563eb;
-            transform: translateY(-1px);
-        }
-
-        /* 流动指示器效果 */
-        .nav-indicator {
+        .nav-item::after {
+            content: '';
             position: absolute;
-            height: 100%;
-            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-            border-radius: 8px;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            z-index: 1;
-            opacity: 0;
-            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background-color: #3b82f6;
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+            border-radius: 3px 3px 0 0;
         }
+
+        .nav-item:hover::after {
+            transform: scaleX(0.6);
+        }
+
+        .nav-item.active::after {
+            transform: scaleX(1);
+            background: linear-gradient(90deg, #3b82f6, #60a5fa);
+            box-shadow: 0 0 8px rgba(59, 130, 246, 0.5);
+        }
+
+        /* 移除流动指示器，使用按钮样式 */
 
         /* 响应式设计 */
         @media (max-width: 768px) {
             .anchor-nav-container {
-                margin: -24px -16px 0 -16px; /* 移动端消除顶部间隙 */
-                padding: 0 16px;
+                width: 100%;
+                padding: 0;
+            }
+            
+            .nav-items {
+                gap: 10px; /* 移动端减少间距 */
             }
             
             .nav-item {
-                padding: 0.5rem 1rem;
+                padding: 0 12px;
                 font-size: 0.8rem;
             }
             
@@ -1771,7 +1841,7 @@
         }
 
         .module-section {
-            /* 不再需要scroll-margin-top，因为导航栏已经固定置顶 */
+            scroll-margin-top: 120px; /* 顶栏高度 + 导航栏高度 + 额外空间 */
         }
 
         /* 添加淡入动画 */
@@ -1837,7 +1907,7 @@
                 </ul>
             </aside>
             <main class="main-content" id="main-content-area">
-                <!-- 锚点导航组件 -->
+                <!-- 锚点导航组件，绝对铺满 -->
                 <div class="anchor-nav-container">
                     <nav class="anchor-nav">
                         <div class="nav-items">
@@ -1854,18 +1924,17 @@
                                 <span>服务流程</span>
                             </a>
                         </div>
-                        <div class="nav-indicator"></div>
                     </nav>
                 </div>
 
                 <div id="home-content" class="home-content space-y-6">
-                    <div id="architecture" class="module-section" style="min-height: auto; margin-top: 24px;">
+                    <div id="architecture" class="module-section" style="min-height: auto;">
                         <h2 class="text-xl font-bold text-gray-800 mb-4 pl-4 border-l-4 border-blue-500">统一数据平台数据架构</h2>
                                                   <div class="grid grid-cols-2 gap-6">
                                                           <div class="col-span-1">
                                 <div class="architecture-wrapper h-full">
                                     <!-- Layer: 应用系统 -->
-                                    <div class="arch-layer">
+                                    <div class="arch-layer" data-section="app-system">
                                         <div class="layer-title-box">应用系统</div>
                                         <div class="layer-content">
                                             <div class="arch-item">驾驶舱系统</div>
@@ -1875,7 +1944,7 @@
                                         </div>
                                     </div>
                                     <!-- Layer: 数据推送 -->
-                                    <div class="arch-layer">
+                                    <div class="arch-layer" data-section="data-push">
                                         <div class="layer-title-box">数据推送</div>
                                         <div class="layer-content">
                                             <div class="arch-item">统一数据网关 (API)</div>
@@ -1885,7 +1954,7 @@
                                         </div>
                                     </div>
                                     <!-- Layer: 数据计算 -->
-                                    <div class="arch-layer data-compute-layer">
+                                    <div class="arch-layer data-compute-layer" data-section="data-compute">
                                         <div class="layer-title-box">数据计算</div>
                                         <div class="layer-content">
                                             <div class="compute-zone offline-zone">
@@ -1912,7 +1981,7 @@
                                         </div>
                                     </div>
                                     <!-- Layer: 数据同步 -->
-                                    <div class="arch-layer">
+                                    <div class="arch-layer" data-section="data-sync">
                                         <div class="layer-title-box">数据同步</div>
                                         <div class="layer-content">
                                             <div class="arch-item">Spark</div>
@@ -1922,7 +1991,7 @@
                                         </div>
                                     </div>
                                     <!-- Layer: 数据源 -->
-                                    <div class="arch-layer">
+                                    <div class="arch-layer" data-section="data-source">
                                         <div class="layer-title-box">数据源</div>
                                         <div class="layer-content">
                                             <div class="arch-item">财险系统</div>
@@ -1936,7 +2005,7 @@
                             </div>
                             <div class="col-span-1">
                                 <div class="architecture-description h-full">
-                                    <div class="desc-section">
+                                    <div class="desc-section" data-section="data-sync">
                                         <h3 class="desc-title">数据同步</h3>
                                         <p class="desc-content">数据平台处理多种业务数据，通过JDBC连接源端数据库获取量数据，通过Spark写入统一数据平台数据湖。对于不支持JDBC连接的情况，采用Kafka将数据推送到数据湖。</p>
                                         <div class="arch-tools-container">
@@ -1947,7 +2016,7 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="desc-section">
+                                    <div class="desc-section" data-section="data-compute">
                                         <h3 class="desc-title">数据计算</h3>
                                         <p class="desc-content">贴源层通过自研抽取工具同步上游业务系统数据到统一数据平台，保证数据同步原貌。模型层结合维度建模理论，构建各层次数据模型。接口层根据不同应用场景，产出适用于不同业务的数据服务。</p>
                                         <div class="arch-tools-container">
@@ -1963,7 +2032,7 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="desc-section">
+                                    <div class="desc-section" data-section="data-push">
                                         <h3 class="desc-title">数据推送</h3>
                                         <p class="desc-content">支持通过四种模式完成与下游系统的对接：统一数据网关API进行数据查询；直连DWS仓库进行数据查询；SFTP数据下发；Kafka消息订阅实时数据。</p>
                                         <div class="arch-tools-container">
@@ -2179,9 +2248,9 @@
                         </div>
                     </div>
 
-                    <!-- 新增：数据平台服务流程模块 -->
+                    <!-- 新增：平台服务流程模块 -->
                     <div id="service-flow" class="module-section">
-                        <h2 class="text-xl font-bold text-gray-800 mb-4 pl-4 border-l-4 border-blue-500">数据平台服务流程</h2>
+                        <h2 class="text-xl font-bold text-gray-800 mb-4 pl-4 border-l-4 border-blue-500">平台服务流程</h2>
                         <div class="service-flow-container">
                             <div class="flow-header">
                                 <div class="header-item">主流程</div>
@@ -2194,7 +2263,7 @@
                                         <div class="step-box">需求提交</div>
                                     </div>
                                     <div class="flow-details">
-                                        <div class="content-block"><p>有数据平台使用需求的业务方填写<span class="doc-link">《数据平台使用需求》</span>,并提交工单到【统一数据平台】系统。</p></div>
+                                        <div class="content-block"><p>有数据平台使用需求的业务方填写<a href="javascript:void(0)" class="doc-link">《数据平台使用需求》</a>,并提交工单到【统一数据平台】系统。</p></div>
                                     </div>
                                 </div>
                                 <!-- 流程步骤 2: 需求沟通 -->
@@ -2212,7 +2281,7 @@
                                         <div class="step-box">确认方案</div>
                                     </div>
                                     <div class="flow-details">
-                                        <div class="content-block"><p>需求方与平台侧一起完成数据方案、所需资源的评估后，产出<span class="doc-link">《数据平台使用评估方案》</span></p></div>
+                                        <div class="content-block"><p>需求方与平台侧一起完成数据方案、所需资源的评估后，产出<a href="javascript:void(0)" class="doc-link">《数据平台使用评估方案》</a></p></div>
                                     </div>
                                 </div>
                                 <!-- 流程步骤 5: 平台适配 -->
@@ -2230,7 +2299,7 @@
                                         <div class="step-box">平台使用</div>
                                     </div>
                                     <div class="flow-details">
-                                        <div class="content-block"><p>业务侧开通测试/正式环境相关权限，自行在平台上进行数据开发。参考<span class="doc-link">《平台使用指南》</span></p></div>
+                                        <div class="content-block"><p>业务侧开通测试/正式环境相关权限，自行在平台上进行数据开发。参考<a href="javascript:void(0)" class="doc-link">《平台使用指南》</a></p></div>
                                     </div>
                                 </div>
                             </div>
@@ -2365,23 +2434,22 @@
                     const targetSection = document.getElementById(targetId);
                     
                     if (targetSection) {
-                        // 直接滚动到目标位置，不需要复杂的偏移计算
+                        // 平滑滚动到目标位置
                         targetSection.scrollIntoView({
                             behavior: 'smooth',
                             block: 'start'
                         });
                     }
                     
-                    // 更新指示器位置
-                    updateIndicator(this);
+                    // 不再需要更新指示器
                 });
             });
             
             // 滚动时更新活动状态
             const observerOptions = {
                 root: null,
-                rootMargin: '-100px 0px -60% 0px', // 固定的顶部边距
-                threshold: 0
+                rootMargin: '-120px 0px -60% 0px', // 根据导航栏位置调整
+                threshold: 0.1
             };
             
             const observer = new IntersectionObserver((entries) => {
@@ -2397,8 +2465,7 @@
                             // 添加当前项的活动状态
                             correspondingNavItem.classList.add('active');
                             
-                            // 更新指示器位置
-                            updateIndicator(correspondingNavItem);
+                            // 不再需要更新指示器
                         }
                     }
                 });
@@ -2409,34 +2476,7 @@
                 observer.observe(section);
             });
             
-            // 更新指示器位置的函数
-            function updateIndicator(activeItem) {
-                if (!indicator) return;
-                
-                const itemRect = activeItem.getBoundingClientRect();
-                const navRect = activeItem.closest('.nav-items').getBoundingClientRect();
-                
-                const left = itemRect.left - navRect.left;
-                const width = itemRect.width;
-                
-                indicator.style.left = `${left}px`;
-                indicator.style.width = `${width}px`;
-                indicator.style.opacity = '1';
-            }
-            
-            // 初始化指示器位置
-            const activeItem = document.querySelector('.nav-item.active');
-            if (activeItem) {
-                setTimeout(() => updateIndicator(activeItem), 100);
-            }
-            
-            // 窗口大小改变时重新计算指示器位置
-            window.addEventListener('resize', () => {
-                const currentActive = document.querySelector('.nav-item.active');
-                if (currentActive) {
-                    updateIndicator(currentActive);
-                }
-            });
+            // 不再需要指示器相关代码
         }
 
         // 初始化流程图提示框
@@ -2617,7 +2657,77 @@
             });
         }
 
+        // 架构图左右联动效果
+        function initArchitectureLinking() {
+            // 获取左侧架构层和右侧描述区域
+            const archLayers = document.querySelectorAll('.arch-layer[data-section]');
+            const descSections = document.querySelectorAll('.desc-section[data-section]');
+            
+            // 为每个架构层添加鼠标事件
+            archLayers.forEach(layer => {
+                const section = layer.getAttribute('data-section');
+                
+                // 只为数据计算和数据推送添加联动效果
+                if (section === 'data-compute' || section === 'data-push' || section === 'data-sync') {
+                    layer.addEventListener('mouseenter', function() {
+                        // 高亮当前架构层
+                        this.classList.add('highlight');
+                        
+                        // 高亮对应的描述区域
+                        const matchingDesc = document.querySelector(`.desc-section[data-section="${section}"]`);
+                        if (matchingDesc) {
+                            matchingDesc.classList.add('highlight');
+                        }
+                    });
+                    
+                    layer.addEventListener('mouseleave', function() {
+                        // 移除高亮效果
+                        this.classList.remove('highlight');
+                        
+                        // 移除描述区域的高亮效果
+                        const matchingDesc = document.querySelector(`.desc-section[data-section="${section}"]`);
+                        if (matchingDesc) {
+                            matchingDesc.classList.remove('highlight');
+                        }
+                    });
+                }
+            });
+            
+            // 为描述区域添加鼠标事件（反向联动）
+            descSections.forEach(section => {
+                const sectionType = section.getAttribute('data-section');
+                
+                // 只为数据计算和数据推送添加联动效果
+                if (sectionType === 'data-compute' || sectionType === 'data-push' || sectionType === 'data-sync') {
+                    section.addEventListener('mouseenter', function() {
+                        // 高亮当前描述区域
+                        this.classList.add('highlight');
+                        
+                        // 高亮对应的架构层
+                        const matchingLayer = document.querySelector(`.arch-layer[data-section="${sectionType}"]`);
+                        if (matchingLayer) {
+                            matchingLayer.classList.add('highlight');
+                        }
+                    });
+                    
+                    section.addEventListener('mouseleave', function() {
+                        // 移除高亮效果
+                        this.classList.remove('highlight');
+                        
+                        // 移除架构层的高亮效果
+                        const matchingLayer = document.querySelector(`.arch-layer[data-section="${sectionType}"]`);
+                        if (matchingLayer) {
+                            matchingLayer.classList.remove('highlight');
+                        }
+                    });
+                }
+            });
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
+            // 初始化架构图联动效果
+            initArchitectureLinking();
+            
             const menuLinks = document.querySelectorAll('.sidebar-menu a');
             const contentFrame = document.getElementById('content-frame');
             const homeContent = document.getElementById('home-content');
